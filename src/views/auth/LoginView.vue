@@ -25,8 +25,6 @@ function toggleAlert() {
     showAlert.value = !showAlert.value;
 }
 
-
-
 // Submit
 const errors = ref([])
 const isMultipleRole = ref(false)

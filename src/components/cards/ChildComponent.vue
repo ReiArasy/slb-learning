@@ -37,7 +37,7 @@ const handleWorkMode = (params) => {
         </div>
         <div class="card-footer">
             <button-component label="Detail" size="full" @click="handleWorkMode('detail')" />
-            <button-component label="Kerjakan Tugas" size="full" @click="handleWorkMode('work')" />
+            <!-- <button-component label="Kerjakan Tugas" size="full" @click="handleWorkMode('work')" /> -->
             <button-component label="Hapus" display="border" size="full" @click="props.method(props.id)" />
         </div>
     </div>

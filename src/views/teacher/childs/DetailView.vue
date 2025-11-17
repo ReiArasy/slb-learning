@@ -101,7 +101,7 @@ const handleStatusFilter = (params) => {
             <router-link :to="{ name: 'childs.index' }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Data Anak Didik Guru</h1>
+            <h1 class="page-title">Data Anak Didik Guru </h1>
         </div>
         <div class="page-body">
             <div class="detail">

@@ -2,60 +2,129 @@
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import InputComponent from '@/components/fields/InputComponent.vue';
 import FailComponent from '@/components/alerts/FailComponent.vue';
-import child from '@/assets/images/child.png'
+import child from '@/assets/images/child.png';
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import api from '@/utils/api';
 
-const router = useRouter()
+const router = useRouter();
 
-const code = ref('')
+// input form
+const name = ref('');
+const disability = ref('');
+const birthDate = ref('');
+const guardian = ref('');
 
-// Alerts
+// alerts
 const showAlert = ref(false);
-const alertTitle = ref('')
-const alertMsg = ref('')
+const alertTitle = ref('');
+const alertMsg = ref('');
 
 function toggleAlert() {
     showAlert.value = !showAlert.value;
 }
 
-const errors = ref([])
+const errors = ref([]);
 async function submit() {
-    errors.value = null
+    errors.value = null;
+
     await api.post(`/childs/insert`, {
-        code: code.value,
-    }).then((res) => {
-        router.push({ name: 'childs.index' })
-    }).catch((e) => {
-        if (e.status === 422) errors.value = e.response.data.errors
+        name: name.value,
+        disability: disability.value,
+        birth_date: birthDate.value,
+        guardian: guardian.value
+    })
+    .then(() => {
+        router.push({ name: 'childs.index' });
+    })
+    .catch((e) => {
+        if (e.status === 422) errors.value = e.response.data.errors;
         if (e.status === 400) {
             showAlert.value = true;
             alertTitle.value = 'Gagal menambahkan anak didik';
             alertMsg.value = e.response.data.message;
         }
-    })
+    });
 }
 </script>
 
 <template>
-    <FailComponent v-show="showAlert" @close="toggleAlert" :title="alertTitle" :message="alertMsg" />
+    <FailComponent 
+        v-show="showAlert" 
+        @close="toggleAlert" 
+        :title="alertTitle" 
+        :message="alertMsg" 
+    />
+
     <div class="container">
         <div class="page-header">
-            <h1 class="page-title">Tambah Data Anak Didik</h1>
-            <button-component label="Kembali" size="small" display="border"
-                @click="router.push({ name: 'childs.index' })" />
+            <h1 class="page-title">Tambah Data Anak</h1>
+            <button-component 
+                label="Kembali" 
+                size="small" 
+                display="border"
+                @click="router.push({ name: 'childs.index' })" 
+            />
         </div>
+
         <div class="page-body">
             <div class="card">
                 <div class="card-body">
-                    <img :src="child" alt="Child">
-                    <div class="form">
-                        <input-component label="Kode unik anak" type="text" placeholder="Contoh: 0Z2XV" id="code"
-                            class="input" v-model="code" :isInvalid="errors?.code ?? false"
-                            :invalidMsg="errors?.code ?? ''" />
-                        <button-component label="Simpan" size="full" @click="submit" />
-                    </div>
+
+                    <!-- IMAGE -->
+                    <img :src="child" alt="Child" class="child-img">
+
+                    <!-- FORM -->
+                    <div class="form-wrapper">
+                        <input-component
+                            label="Nama Anak"
+                            type="text"
+                            placeholder="Contoh: Bryan Dayon"
+                            class="input"
+                            v-model="name"
+                            :isInvalid="errors?.name ?? false"
+                            :invalidMsg="errors?.name ?? ''"
+                        />
+
+                        <input-component
+                            label="Ketunaan"
+                            type="text"
+                            placeholder="Pilih Jenis Ketunaan"
+                            class="input"
+                            v-model="disability"
+                            :isInvalid="errors?.disability ?? false"
+                            :invalidMsg="errors?.disability ?? ''"
+                        />
+
+                        <input-component
+                            label="Tanggal Lahir"
+                            type="date"
+                            class="input"
+                            v-model="birthDate"
+                            :isInvalid="errors?.birth_date ?? false"
+                            :invalidMsg="errors?.birth_date ?? ''"
+                        />
+
+                        <input-component
+                            label="Wali"
+                            type="text"
+                            placeholder="Contoh: Susi"
+                            class="input"
+                            v-model="guardian"
+                            :isInvalid="errors?.guardian ?? false"
+                            :invalidMsg="errors?.guardian ?? ''"
+                        />
+
+                        <div class="btn-wrapper">
+                            <button-component 
+                                label="Simpan" 
+                                size="full" 
+                                @click="submit" 
+                            />
+                        </div>
+
+                    </div> 
+
                 </div>
             </div>
         </div>
@@ -67,45 +136,58 @@ async function submit() {
   background-color: var(--White);
   padding: 3rem;
   border-radius: 20px;
-  box-shadow: 0 5.192px 31.153px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 5.192px 31.153px rgba(0, 0, 0, 0.25);
 
   .card-body {
     display: grid;
-    grid-template-columns: 30% 70%; // <-- Layout default desktop
-    gap: 20px;
-    align-items: center; // <-- Tambahan: agar form & gambar sejajar di tengah
+    grid-template-columns: 28% 72%; 
+    gap: 40px;
+    align-items: center;
 
-    img {
-      width: 100%;
-      max-width: 350px; // <-- Tambahan: batasi lebar gambar
-      justify-self: center; // <-- Tambahan: pusatkan gambar di grid
+    .child-img {
+      width: 85%;
+      max-width: 260px; 
+      justify-self: center;
     }
 
-    .input {
-      margin-bottom: 30px;
+    .form-wrapper {
+      width: 85%;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .btn-wrapper {
+      width: 60%;
+      margin-top: 10px;
     }
   }
 }
 
-/* --- RESPONSIVE --- 
-Target tablet (dan di bawahnya)
-*/
+/* Responsive */
 @media (max-width: 992px) {
   .card {
-    padding: 2rem; // Kurangi padding di layar lebih kecil
+    padding: 2rem;
 
     .card-body {
-      grid-template-columns: 1fr; // Ubah jadi 1 kolom (vertikal)
-      gap: 40px; // Beri jarak lebih untuk tumpukan
-      
-      img {
-        max-width: 250px; // Kecilkan gambar di mobile
+      grid-template-columns: 1fr;
+      gap: 30px;
+
+      .child-img {
+        max-width: 200px;
+      }
+
+      .form-wrapper {
+        width: 100%;
+      }
+
+      .btn-wrapper {
+        width: 100%;
       }
     }
   }
 }
 
-/* Target ponsel kecil */
 @media (max-width: 576px) {
   .card {
     padding: 1.5rem;

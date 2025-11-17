@@ -78,10 +78,10 @@ const destroy = async () => {
 
         <div class="page-header">
             <h1 class="page-title">Data Anak {{ authStore.user.role == 1 ? 'Didik' : '' }}</h1>
-            <button-component label="Tambah Anak" size="small" @click="router.push({ name: 'childs.create' })" />
+            <button-component label="Tambah Anak Didik" size="small" @click="router.push({ name: 'childs.create' })" />
         </div>
         <div class="page-body">
-            <search-component v-model="search" placeholder="Cari nama, kode, atau orang tua..." />
+            <search-component v-model="search" placeholder="Cari Data Anak" />
 
             <div class="grid-container">
                 <div class="item" v-for="(item, index) in filteredChilds" :key="index">
