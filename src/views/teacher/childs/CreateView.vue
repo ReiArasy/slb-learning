@@ -115,7 +115,7 @@ async function submit() {
                             :invalidMsg="errors?.guardian ?? ''"
                         />
 
-                        <div class="btn-wrapper">
+                        <div class="btn-submit">
                             <button-component 
                                 label="Simpan" 
                                 size="full" 
@@ -157,8 +157,8 @@ async function submit() {
       gap: 22px;
     }
 
-    .btn-wrapper {
-      width: 60%;
+    .btn-submit {
+      width: 100%;
       margin-top: 10px;
     }
   }
