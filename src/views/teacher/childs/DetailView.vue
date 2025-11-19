@@ -101,36 +101,57 @@ const handleStatusFilter = (params) => {
             <router-link :to="{ name: 'childs.index' }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Data Anak Didik Guru </h1>
+            <h1 class="page-title">Data Anak Didik</h1>
         </div>
         <div class="page-body">
             <div class="detail">
                 <img :src="child" alt="Child">
                 <div class="biodata">
-                    <span class="score">
-                        <p>Total Skor :</p>
-                        <p class="value">{{ points }}</p>
-                    </span>
-                    <span class="name">
-                        <p>Nama Anak :</p>
-                        <p class="value">{{ data?.child.fullName }}</p>
-                    </span>
-                    <span class="name">
-                        <p>Nama Orang Tua :</p>
-                        <p class="value">{{ data?.parent.fullName }}</p>
-                    </span>
-                    <span class="name">
-                        <p>Kode Unik :</p>
-                        <p class="value">{{ data?.child.code }}</p>
-                    </span>
-                    <span class="level">
-                        <p>Level Anak </p>
-                        <div class="level-container">
-                            <div :class="['item', { active: data?.child?.level == 1 }]">1</div>
-                            <div :class="['item', { active: data?.child?.level == 2 }]">2</div>
-                            <div :class="['item', { active: data?.child?.level == 3 }]">3</div>
+    
+                    <!-- nama anak -->
+                    <h2 class="child-name">
+                        {{ data?.child.fullName }}
+                    </h2>
+
+                    <!-- total nilai -->
+                    <div class="total-score">
+                        Total Nilai:
+                        <span class="score-value">{{ points }}</span>
+                    </div>
+
+                    <!-- detail list -->
+                    <div class="detail-list">
+                        <div class="row">
+                            <span class="label">Tanggal Lahir:</span>
+                            <span class="value">{{ formatDate(data?.child.createdAt) }}</span>
                         </div>
-                    </span>
+
+                        <div class="row">
+                            <span class="label">Ketunaan:</span>
+                            <span class="value">{{ data?.child.ketunaan ?? '-' }}</span>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Nama Wali:</span>
+                            <span class="value">{{ data?.parent.fullName }}</span>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Kode Unik:</span>
+                            <span class="value code">
+                                <i class="bx bx-copy"></i>
+                                #{{ data?.child.code }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- edit button -->
+                    <ButtonComponent 
+                        label="Edit Data Anak" 
+                        class="outline secondary" 
+                        display="border"
+                        size="large"
+                    />
                 </div>
             </div>
             <div class="data-wrapper">
@@ -217,79 +238,70 @@ const handleStatusFilter = (params) => {
         margin-bottom: 30px;
     }
 
+    // biodata
     .biodata {
         width: 100%;
+        text-align: center;
 
-        span {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 20px;
+        // nama anak
+        .child-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--Secondary-900);
             margin-bottom: 10px;
         }
 
-        .score {
-            font-size: 40px;
+        // score section
+        .total-score {
+            font-size: 23px;
+            margin: 0 auto 10px auto;
             color: var(--Secondary-900);
-        }
+            font-weight: 300;
 
-        .value {
-            font-weight: bold;
-            color: var(--Secondary-900);
-            font-family: 'Ubuntu Sans';
-        }
+            display: flex;
+            justify-content: space-between;   // kiri — kanan
+            align-items: center;             
+            width: 80%;                       
+            text-align: left;       
 
-        .level-container {
-            display: grid;
-            grid-template-columns: auto auto auto;
-            gap: 20px;
-
-            .item {
-                padding: 25px 20px;
-                border-radius: 10px;
-                font-size: 30px;
-                font-weight: bold;
-                font-family: 'Ubuntu Sans';
-                border: 2px solid;
-                text-align: center;
-                cursor: pointer; // Tambahkan cursor pointer
-
-                &:nth-child(1) {
-                    border-color: var(--Secondary-900);
-                    color: var(--Secondary-900);
-
-                    &.active {
-                        background-color: var(--Secondary-900);
-                        color: var(--White);
-                    }
-                }
-
-                &:nth-child(2) {
-                    border-color: var(--Ternary-500);
-                    color: var(--Ternary-500);
-
-                    &.active {
-                        background-color: var(--Ternary-500);
-                        color: var(--White);
-                    }
-                }
-
-                &:nth-child(3) {
-                    border-color: var(--Primary-900);
-                    color: var(--Primary-900);
-
-                    &.active {
-                        background-color: var(--Primary-900);
-                        color: var(--White);
-                    }
-                }
+            // point score section
+            .score-value {
+                font-size: 28px;
+                color: var(--Secondary-900);
+                font-weight: 700;
             }
         }
 
-        button {
-            margin-top: 30px;
+        .detail-list {
+            text-align: left;
+            margin: 0 auto 30px auto;
+            width: 80%;
+
+            .row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+
+                .label {
+                    font-size: 18px;
+                    color: var(--Neutral-600);
+                }
+
+                .value {
+                    font-weight: 600;
+                    color: var(--Secondary-900);
+                }
+
+                .code {
+                    display: flex;
+                    gap: 5px;
+                    align-items: center;
+                    cursor: pointer;
+                }
+            }
         }
     }
+
 
     // Wrapper untuk Swiper dan Pagination Manual
     .data-wrapper {

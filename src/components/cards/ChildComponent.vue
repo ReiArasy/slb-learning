@@ -24,13 +24,13 @@ const handleWorkMode = (params) => {
     <div class="card">
         <div class="card-header">
             <img :src="child" alt="Child">
-            <div class="level" v-if="props.level">
+            <!-- <div class="level" v-if="props.level">
                 {{ props.level }}
-            </div>
+            </div> -->
         </div>
         <div class="card-body">
             <p class="name">{{ props.name }}</p>
-            <p class="parent" v-if="props.parentName">{{ props.parentName }}</p>
+            <p class="ketunaan" v-if="props.parentName">{{ props.ketunaan ?? 'Tunagrahita' }}</p>
             <div class="code">
                 <CopyIcon /> {{ props.code }}
             </div>
@@ -77,6 +77,11 @@ const handleWorkMode = (params) => {
     .name {
         font-size: 25px;
         font-weight: bold;
+    }
+
+    .ketunaan {
+        font-size: 15px;
+        font-weight: 300;
     }
 
     .code {

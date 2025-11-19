@@ -20,65 +20,13 @@ const link = ref('')
 const files = ref('')
 const description = ref('')
 const methodOfArray = ref([
-    {
-        level: 1,
-        data: [
-            {
-                label: 'Mendengar Audio',
-                value: 1
-            },
-            {
-                label: 'Menulis Ulang',
-                value: 2
-            },
-            {
-                label: 'Membaca',
-                value: 3
-            },
-        ]
-    },
-    {
-        level: 2,
-        data: [
-            {
-                label: 'Mendengar Audio',
-                value: 1
-            },
-            {
-                label: 'Menulis Ulang',
-                value: 2
-            },
-            {
-                label: 'Membaca',
-                value: 3
-            },
-        ]
-    },
-    {
-        level: 3,
-        data: [
-            {
-                label: 'Mendengar Audio',
-                value: 1
-            },
-            {
-                label: 'Menulis Ulang',
-                value: 2
-            },
-            {
-                label: 'Membaca',
-                value: 3
-            },
-            {
-                label: 'Mengurut Kata',
-                value: 4
-            },
-            {
-                label: 'Menebak Cepat',
-                value: 5
-            },
-        ]
-    },
+    { label: 'Menulis', value: 1 },
+    { label: 'Membaca', value: 2 },
+    { label: 'Audio', value: 3 },
+    { label: 'Menyusun Ulang', value: 4 },
+    { label: 'Objek & Warna', value: 5 },
+    { label: 'Membilang Angka', value: 6 },
+    { label: 'Aritmatika', value: 7 },
 ])
 const methodSelected = ref([])
 const method = ref(null)
@@ -153,15 +101,6 @@ const submit = async () => {
                                 class="req">*</span></label>
                         <CheckboxesComponent :data="methodSelected" :function="handleMethod" :selectedValue="method"
                             :isInvalid="errors?.method ?? false" :invalidMsg="errors?.method ?? ''" />
-                    </div>
-                    <div class="input-wrapper level-wrapper" :class="{ 'invalid': errors?.level ?? false }">
-                        <label for="level">Level Materi <span class="req">*</span></label>
-                        <div class="level-container">
-                            <div :class="['item', level == 1 ? 'active' : '']" @click="handleLevel(1)">1</div>
-                            <div :class="['item', level == 2 ? 'active' : '']" @click="handleLevel(2)">2</div>
-                            <div :class="['item', level == 3 ? 'active' : '']" @click="handleLevel(3)">3</div>
-                        </div>
-                        <div class="invalid-msg">{{ errors?.level }}</div>
                     </div>
                 </div>
                 <input-component label="Judul Materi" :required="true" type="text" placeholder="Judul materi" id="title"

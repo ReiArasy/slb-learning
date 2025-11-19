@@ -1,5 +1,6 @@
 <script setup>
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
+import FilterIcon from '@/components/shape/FilterIcon.vue';
 import SearchComponent from '@/components/fields/SearchComponent.vue';
 import ChildComponent from '@/components/cards/ChildComponent.vue';
 import { computed, onMounted, ref } from 'vue';
@@ -80,8 +81,15 @@ const destroy = async () => {
             <h1 class="page-title">Data Anak {{ authStore.user.role == 1 ? 'Didik' : '' }}</h1>
             <button-component label="Tambah Anak Didik" size="small" @click="router.push({ name: 'childs.create' })" />
         </div>
+
         <div class="page-body">
-            <search-component v-model="search" placeholder="Cari Data Anak" />
+            <!-- <search-component v-model="search" placeholder="Cari Data Anak" />
+            <FilterIcon class="filterIcon"/> -->
+
+            <div class="search-row">
+                <search-component v-model="search" placeholder="Cari Data Anak" />
+                <FilterIcon class="filterIcon"/>
+            </div>
 
             <div class="grid-container">
                 <div class="item" v-for="(item, index) in filteredChilds" :key="index">
@@ -98,6 +106,22 @@ const destroy = async () => {
 </template>
 
 <style lang="scss" scoped>
+
+.search-row {
+    display: flex;
+    align-items: center;
+    gap: 12px; 
+}
+
+.filterIcon {
+    color: neu;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    margin-left: 10px;
+     color: var(--Neutral-700, #888);
+}
+
 .grid-container {
     display: grid;
     // Gunakan 1fr (fraction) sebagai ganti %

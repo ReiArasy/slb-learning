@@ -87,9 +87,9 @@ async function submit() {
                         />
 
                         <input-component
-                            label="Ketunaan"
+                            label="Jenis Ketunaan"
                             type="text"
-                            placeholder="Pilih Jenis Ketunaan"
+                            placeholder="Contoh: Tunagrahita"
                             class="input"
                             v-model="disability"
                             :isInvalid="errors?.disability ?? false"
@@ -106,7 +106,7 @@ async function submit() {
                         />
 
                         <input-component
-                            label="Wali"
+                            label="Nama Wali"
                             type="text"
                             placeholder="Contoh: Susi"
                             class="input"

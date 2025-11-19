@@ -66,17 +66,6 @@ const visibility = async () => {
                             <p>Metode Belajar : </p>
                             <div class="method-selected">{{ formatMethodLabel(material.method) }}</div>
                         </div>
-                        <div class="level-wrapper">
-                            <p>Level Materi : </p>
-                            <div class="level-container">
-                                <div :class="['item', material.level == 1 ? 'active' : '']" v-if="material.level == 1">1
-                                </div>
-                                <div :class="['item', material.level == 2 ? 'active' : '']" v-if="material.level == 2">2
-                                </div>
-                                <div :class="['item', material.level == 3 ? 'active' : '']" v-if="material.level == 3">3
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 <div class="material-body">
