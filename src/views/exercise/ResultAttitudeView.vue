@@ -65,69 +65,50 @@ const handleCancelAction = () => {
     isConfirmOpen.value = false; // Tutup modal
 };
 // END Confirmation Modal Handlers
-</script> 
+</script>
 
 <template>
-    <div class="attitude-container">
+    <div class="attitude-detail-container">
 
+        <!-- back and title -->
         <div class="header-row">
             <router-link :to="{ name: 'exercise.quiz.summary', params: { id, quizId } }" class="back-icon">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="title">Penilaian Perilaku</h1>
+            <h1 class="title">Detail Perilaku Anak</h1>
         </div>
 
-        
+        <!-- child info -->
         <div class="child-info">
-            <div>
+            <div class="child-left">
                 <h2 class="child-name">{{ data?.child?.fullName }}</h2>
-                <p class="child-date">Catatan Perilaku - {{ data?.exercise?.createdAt?.slice(0,10) }}</p>
+                <p class="child-score">
+                    Nilai Perilaku: <span>{{ data?.attitude?.point? '' : '80' }}</span>
+                </p>
+                <p class="child-date">
+                    Catatan Perilaku - {{ data?.date ?? '10/12/2025' }}
+                </p>
             </div>
+
             <p class="child-code">#{{ data?.child?.code }}</p>
         </div>
 
-        
-        <ConfirmComponent
-            v-if="isConfirmOpen"
-            title="Simpan penilaian?"
-            message="Apakah Anda yakin ingin menyimpan penilaian?"
-            confirmText="Simpan"
-            cancelText="Batal"
-            @confirm="handleConfirmAction"
-            @cancel="handleCancelAction"
-        />
+        <!-- note -->
+        <div class="note-section">
+            <label>Catatan Perilaku</label>
 
-        <div class="section">
-            <label>Catatan Penilaian Perilaku <span class="req">*</span></label>
-            <WysiwygEditorComponent v-model="note" class="wysiwyg-wrap" />
+            <!-- hasil hasil note -->
+            <div class="note-content" v-html="data?.attitude?.note? '' : 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Ex sapien vitae pellentesque sem placerat in id. Pretium tellus duis convallis tempus leo eu aenean. Urna tempor pulvinar vivamus fringilla lacus nec metus. Iaculis massa nisl malesuada lacinia integer nunc posuere. Semper vel class aptent taciti sociosqu ad litora. Conubia nostra inceptos himenaeos orci varius natoque penatibus. Dis parturient montes nascetur ridiculus mus donec rhoncus. Nulla molestie mattis scelerisque maximus eget fermentum odio. Purus est efficitur laoreet mauris pharetra vestibulum fusce.'"></div>
         </div>
 
-        <InputComponent
-            type="number"
-            label="Penilaian Perilaku"
-            placeholder="Contoh: 80"
-            id="point"
-            v-model="point"
-            :isInvalid="errors?.point ?? false"
-            :invalidMsg="errors?.point ?? ''"
-            :required="true"
-        />
-
-        <div class="btn-area">
-            <ButtonComponent label="Simpan" class="secondary" @click="showConfirmation" />
-        </div>
     </div>
 </template>
 
 <style scoped lang="scss">
 
-.attitude-container {
+.attitude-detail-container {
     padding: 25px 40px;
-    font-family: 'Inter', sans-serif;
-}
-
-.section {
-    margin-bottom: 4em; // bebas mau dibesarkan
+    font-family: 'Ubuntu Sans';
 }
 
 /* ---- HEADER ---- */
@@ -154,8 +135,14 @@ const handleCancelAction = () => {
 .child-info {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 35px;
+
+    .child-left {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
 
     .child-name {
         color: #008BD8;
@@ -163,54 +150,91 @@ const handleCancelAction = () => {
         font-weight: 700;
     }
 
+    .child-score {
+        font-size: 20px;
+        font-weight: 600;
+        color: #008BD8;
+
+        span {
+            color: #008BD8;
+            font-weight: 700;
+        }
+    }
+
     .child-date {
         color: #7c7c7c;
-        margin-top: 4px;
+        margin-top: 2px;
     }
 
     .child-code {
         color: #008BD8;
         font-size: 18px;
         font-weight: 600;
+        margin-top: 5px;
+        white-space: nowrap;
     }
 }
 
-/* ---- INPUT BLOCK ---- */
-.input-block {
+/* ---- NOTE ---- */
+.note-section {
+    margin-top: 25px;
 
     label {
         font-size: 16px;
-        font-weight: 500;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+        color: #008BD8;
     }
 
-    .req {
+    .note-content {
+        background: #fff;
+        border-radius: 10px;
         color: red;
+        padding: 20px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        font-size: 16px;
+
+        /* styling basic WYSIWYG output */
+        p, span, div {
+            line-height: 1.6;
+        }
+
+        ul, ol {
+            padding-left: 25px;
+            margin: 10px 0;
+        }
     }
 }
 
-/* ---- BUTTON AREA ---- */
-.btn-area {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 40px;
-
-    .primary-btn {
-        width: 150px;
-    }
-}
-
-/* ---- Responsive ---- */
+/* ---- RESPONSIVE ---- */
 @media(max-width: 768px) {
+
     .child-info {
         flex-direction: column;
         align-items: flex-start;
-        gap: 5px;
+        gap: 10px;
     }
 
-    .section {
-    margin-bottom: 7rem; // responsive input text
+    .child-code {
+        margin-top: 10px;
+    }
+
+    .child-name {
+        font-size: 24px;
+    }
+
+    .child-score {
+        font-size: 18px;
+    }
+
+    .header-row .title {
+        font-size: 20px;
+    }
+
+    .attitude-detail-container {
+        padding: 20px;
+    }
 }
 
-}
 </style>
-

@@ -10,6 +10,8 @@ import WysiwygEditorComponent from '@/components/fields/WysiwygEditorComponent.v
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import QuestionBankModal from '@/components/modal/QuestionBankModal.vue';
 import ConfirmComponent from '@/components/confirm/ConfirmComponent.vue';
+import CheckboxesComponent from '@/components/fields/CheckboxesComponent.vue';
+
 
 const baseUrl = import.meta.env.VITE_APP_API_URL;
 
@@ -21,7 +23,24 @@ const isConfirmOpen = ref(false); // Konfirmasi Submit
 
 const name = ref('');
 const description = ref('');
-const level = ref(null);
+// Tipe Latihan (pill options)
+const method = ref(null);
+
+const methodSelected = ref([
+    { label: 'Menulis', value: 1 },
+    { label: 'Membaca', value: 2 },
+    { label: 'Audio', value: 3 },
+    { label: 'Menyusun Ulang', value: 4 },
+    { label: 'Objek & Warna', value: 5 },
+    { label: 'Membilang Angka', value: 6 },
+    { label: 'Aritmatika', value: 7 },
+]);
+
+const handleMethod = (val) => {
+    method.value = val;
+};
+
+// const level = ref(null);
 const errors = ref({}); // Validasi error (diubah ke object)
 
 const showConfirmation = () => {
@@ -71,28 +90,30 @@ const submit = async () => {
             <router-link :to="{ name: 'childs.detail', params: route.params.id }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Buat Latihan Baru</h1>
+            <h1 class="page-title">Buat Soal Baru</h1>
         </div>
         <div class="page-body">
-            <div class="form">
-                <!-- <div class="input-flex">
-                    <div class="input-wrapper level-wrapper" :class="{ 'invalid': errors?.level ?? false }">
-                        <label for="level">Level Latihan <span class="req">*</span></label>
-                        <div class="level-container">
-                            <div :class="['item', level == 1 ? 'active' : '']" @click="handleLevel(1)">1</div>
-                            <div :class="['item', level == 2 ? 'active' : '']" @click="handleLevel(2)">2</div>
-                            <div :class="['item', level == 3 ? 'active' : '']" @click="handleLevel(3)">3</div>
-                        </div>
-                        <div class="invalid-msg">{{ errors?.level }}</div>
-                    </div>
-                </div> -->
+            <div class="input-wrapper">
+                <!-- checkbox component-->
+                <label for="type" :class="{ 'invalid': errors?.method ?? false }">
+                    Tipe Latihan <span class="req">*</span>
+                </label>
 
-                <input-component label="Judul Latihan" :required="true" type="text" placeholder="Judul latihan"
+                <CheckboxesComponent
+                    :data="methodSelected"
+                    :function="handleMethod"
+                    :isInvalid="errors?.method ?? false"
+                    :invalidMsg="errors?.method ?? ''"
+                />
+            </div>
+
+            <div class="form">
+                <input-component label="Judul Latihan" :required="true" type="text" placeholder="Contoh: Latihan Membaca"
                     id="name" class="input" v-model="name" :isInvalid="errors?.name ?? false"
                     :invalidMsg="errors?.name ?? ''" />
 
                 <div class="input-wrapper">
-                    <label for="editor">Deskripsi</label>
+                    <label for="editor">Deskripsi Soal</label>
                     <WysiwygEditorComponent v-model="description" class="textarea" />
                 </div>
 

@@ -57,9 +57,9 @@ const visibility = async () => {
                         <ButtonComponent label="Edit Materi" size="small" display="border"
                             @click="router.push({ name: 'material.edit', params: { id, materialId } })"
                             v-if="authStore.user.role == 1" />
-                        <ButtonComponent :label="!material.isHidden ? 'Sembunyikan' : 'Tampilkan'"
+                        <!-- <ButtonComponent :label="!material.isHidden ? 'Sembunyikan' : 'Tampilkan'"
                             :icon="!material.isHidden ? EyeSlashIcon : EyeIcon" class="secondary" size="small"
-                            display="border" @click="visibility" v-if="authStore.user.role == 1" />
+                            display="border" @click="visibility" v-if="authStore.user.role == 1" /> -->
                     </div>
                     <div class="flex">
                         <div class="method-wrapper">

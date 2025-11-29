@@ -90,7 +90,7 @@ const calculateTotalPoint = () => {
             </div>
         </div>
     </div>
-</template>
+</template> 
 
 <style lang="scss" scoped>
 .action {
@@ -231,3 +231,287 @@ const calculateTotalPoint = () => {
     }
 }
 </style>
+
+<!-- INIII HALAMAN UPDATE DARI QUIZ AWAL -->
+
+<!-- <script setup>
+import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
+import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
+import HistoryComponent from '@/components/cards/HistoryComponents.vue';
+import EyeIcon from '@/components/shape/EyeIcon.vue';
+import EyeSlashIcon from '@/components/shape/EyeSlashIcon.vue';
+
+import { formatDate } from '@/helpers/formatDate';
+import { authStore } from '@/stores/AuthStore';
+import { workStore } from '@/stores/WorkStore';
+
+import api from '@/utils/api';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const route = useRoute();
+const router = useRouter();
+
+const id = route.params.id;
+const data = ref(null);
+const isWorkMode = ref(false);
+
+const visibility = () => {
+    data.value.isHidden = !data.value.isHidden;
+};
+
+const dummyHistory = [
+    {
+        point: 60,
+        answeredCount: 15,
+        totalQuestions: 20,
+        createdAt: '2025-07-28'
+    },
+    {
+        point: 60,
+        answeredCount: 15,
+        totalQuestions: 20,
+        createdAt: '2025-07-28'
+    }
+];
+</script> -->
+
+<!-- <template>
+    <div class="container"> 
+
+        <div class="page-header">
+            <router-link :to="{ name: 'exercise.quiz.list', params: { id } }">
+                <ChevronLeftIcon />
+            </router-link>
+
+            <h1 class="page-title">Mengerjakan Latihan</h1>
+        </div>
+
+        <div class="page-body">
+            <div class="card overview-card"> 
+
+                <div class="card-header">
+                    <h3>{{ data?.name ?? 'Latihan Membaca' }}</h3>
+
+                    <div class="header-actions">
+                        <ButtonComponent
+                            v-if="!isWorkMode && authStore.user.role == 1"
+                            :label="!data?.isHidden ? 'Sembunyikan' : 'Tampilkan'"
+                            :icon="!data?.isHidden ? EyeSlashIcon : EyeIcon"
+                            class="secondary"
+                            size="small"
+                            display="border"
+                            @click="visibility"
+                        />
+
+                        <ButtonComponent
+                            label="Edit"
+                            class="secondary"
+                            size="small"
+                            display="border"
+                            @click="handleEditClick"
+                        />
+                    </div>
+                </div> -->
+
+                <!-- CARD BODY -->
+                <!-- <div class="card-body"> 
+
+                    <div class="description">
+                        <span class="value">
+                            {{ data?.description ?? 'Lorem ipsum dolor sit amet' }}
+                        </span>
+                    </div>
+
+                    <div class="data">
+
+                        <div class="row">
+                            <span class="label">Tanggal Dibuat :</span>
+                            <span class="value">{{ data?.date ?? '10/12/2025' }}</span>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Jumlah Soal :</span>
+                            <span class="value">{{ data?.questions?.length ?? 0 }} Soal</span>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Poin Lolos :</span>
+                            <span class="value">{{ data?.point ?? 100 }} Poin</span>
+                        </div> 
+
+                        <div class="row type-row">
+                            <span class="label">Tipe Latihan :</span>
+                            <span class="value type-badge-inline">
+                                {{ data?.method ?? 'Membaca' }}
+                            </span>
+                        </div> 
+
+                        <div class="action">
+                            <ButtonComponent
+                                v-if="authStore?.user?.role == 1"
+                                label="Kerjakan Latihan"
+                                class="secondary"
+                                size=""
+                            />
+                        </div>
+                    </div>
+
+                    <HistoryComponent
+                        :items="data?.answers && data.answers.length > 0 ? data.answers : dummyHistory"
+                    />
+                </div>
+            </div>
+        </div>
+    </div>
+</template> -->
+
+<!-- <style lang="scss" scoped>
+.page-header h1 {
+    color: var(--Secondary-900) !important;
+}
+
+.page-header svg path {
+    fill: var(--Secondary-900) !important;
+
+    
+}
+
+.page-body {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.card.overview-card {
+    width: 95%;
+    max-width: 980px;
+    padding: 32px;
+    border-radius: 18px;
+    background: var(--White);
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.08);
+    
+
+    /* header */
+    .card-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;  // biar spacing rapi
+    margin-bottom: 18px;
+
+    h3 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--Secondary-900);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Garis blue nya */
+    &::after {
+        content: "";
+        grid-column: 1 / -1;  // FULL WIDTH
+        display: block;
+        width: 100%;
+        height: 2px;
+        background: var(--Secondary-900);
+        margin-top: 10px;
+        border-radius: 10px;
+    }
+}
+
+
+    /* body */
+    .card-body {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 24px;
+
+        .description {
+            font-size: 13px;
+            color: var(--Neutral-700);
+        }
+
+        /* data */
+        .data {
+            .row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 12px;
+
+                .label,
+                .value {
+                    color: var(--Secondary-900);
+                }
+            }
+
+            .type-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .type-badge-inline {
+                background: var(--Info-50, #e9f5ff);
+                padding: 4px 10px;
+                border-radius: 10px;
+                font-size: 13px;
+            }
+
+            .action {
+                margin-top: 18px;
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+    }
+
+    /* view tablet */
+    @media (max-width: 1024px) {
+        .card-body {
+            grid-template-columns: 1fr 260px;
+        }
+    }
+
+    /* view mobile*/
+    @media (max-width: 768px) {
+    
+        .card.overview-card {
+            padding: 20px;
+        }
+
+        .card-header {
+            grid-template-columns: 1fr;   // header jadi 1 kolom
+            gap: 12px;
+
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+
+                button {
+                    width: 100%;
+                }
+            }
+        }
+
+        /* jadi 1 column */
+        .card-body {
+            grid-template-columns: 1fr;
+        }
+
+        /* button setting */
+        .data .action {
+            justify-content: stretch;
+
+            button {
+                width: 100%;
+            }
+        }
+    }
+}
+</style>
+ -->

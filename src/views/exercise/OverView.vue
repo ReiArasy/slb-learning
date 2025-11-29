@@ -53,53 +53,94 @@ const visibility = async () => {
             <router-link :to="{ name: 'exercise.quiz.list', params: { id: id } }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Mengerjakan Latihan</h1>
+            <h1 class="page-title">Konfirmasi Mengerjakan Latihan</h1>
         </div>
+
         <div class="page-body">
             <div class="card">
+                
+                <!-- HEADER -->
                 <div class="card-header">
                     <h3>{{ data?.name }}</h3>
-                    <div class="level-container">
-                        <div :class="['item', { active: data?.level == 1 }]">1</div>
-                        <div :class="['item', { active: data?.level == 2 }]">2</div>
-                        <div :class="['item', { active: data?.level == 3 }]">3</div>
-                    </div>
-                    <ButtonComponent :label="!data.isHidden ? 'Sembunyikan' : 'Tampilkan'"
-                        :icon="!data.isHidden ? EyeSlashIcon : EyeIcon" class="secondary" size="small" display="border"
-                        @click="visibility" v-if="!isWorkMode && authStore.user.role == 1" />
                 </div>
+
+                <!-- BODY -->
                 <div class="card-body">
+
+                    <!-- Deskripsi -->
                     <div class="description">
                         <div v-html="data?.description"></div>
                     </div>
+
+                    <!-- Data Detail -->
                     <div class="data">
-                        <div class="date">Tanggal Ditambahkan : <span>{{ formatDate(data?.date) }}</span></div>
-                        <div class="questionTotal">Jumlah Soal : <span>{{ data?.questions?.length }}</span></div>
-                        <div class="point">Poin Lolos : <span>60</span></div>
+                        <div class="date">
+                            Tanggal Ditambahkan : <span>{{ formatDate(data?.date) }}</span>
+                        </div>
+
+                        <div class="questionTotal">
+                            Jumlah Soal : <span>{{ data?.questions?.length }}</span>
+                        </div>
+
+                       <div class="tipelatihan">
+                            <span class="label">Tipe Latihan :</span>
+                            <span class="value type-badge-inline">
+                                {{ data?.method ?? 'Membaca' }}
+                            </span>
+                        </div>  
                     </div>
+
+                    <!-- ACTIONS -->
                     <div class="action">
-                        <ButtonComponent label="Mulai Mengerjakan" class="secondary"
-                            @click="router.push({ name: 'exercise.quiz.work', params: { id: id, quizId: quizId } })" v-if="authStore?.user?.role == 1" />
-                        <ButtonComponent :label="authStore?.user?.role == 1 ? 'Review pengerjaan sebelumnya' : 'Review pengerjaan'" class="primary" display="border"
-                            @click="router.push({ name: 'exercise.quiz.review', params: { id: id, quizId: quizId } })"
-                            v-if="data?.answers?.length > 0" />
+
+                        <!-- BUTTON UTAMA -->
+                        <ButtonComponent 
+                            label="Mulai Mengerjakan" 
+                            class="secondary"
+                            @click="router.push({ 
+                                name: 'exercise.quiz.work', 
+                                params: { id: id, quizId: quizId } 
+                            })"
+                        />
+
+                        <!-- BUTTON BORDER (Laporan Perilaku) -->
+                        <ButtonComponent 
+                            label="Laporan Perilaku"
+                            class="secondary"
+                            display="border"
+                            @click="router.push({
+                                name: 'exercise.behavior',
+                                params: { id: id, quizId: quizId }
+                            })"
+                            style="margin-top: 12px"
+                        />
                     </div>
+
+                    <!-- HISTORY DIHAPUS -->
+
                 </div>
             </div>
         </div>
     </div>
-</template>3
+</template>
+
 
 <style lang="scss" scoped>
 .page-header {
+    align-items: center;
+    gap: 10px; // jarak antara icon & title
+
     h1 {
         color: var(--Secondary-900) !important;
+        font-size: 25px;
     }
 
-    svg path {
-        fill: var(--Secondary-900) !important;
+    svg {
+        width: 30px !important;   
+        height: 30px !important;
     }
 }
+
 
 .page-body {
     h3 {
@@ -113,13 +154,23 @@ const visibility = async () => {
         border-radius: 10px;
         background-color: var(--White);
         box-shadow: 0 5.192px 31.153px 0 rgba(0, 0, 0, 0.25);
-
         .card-header {
             display: grid;
-            grid-template-columns: 1fr auto; // <-- Diubah dari 80%
+            grid-template-columns: 1fr auto; // Diubah dari 80%
             align-items: center;
             margin-bottom: 40px;
-            gap: 30px; // <-- Tambahkan gap
+            gap: 30px; // gap
+
+            &::after {
+                content: "";
+                grid-column: 1 / -1;   // garis full 2 kolom
+                display: block;
+                width: 100%;           // setting panjang garis
+                height: 2px;           // setting ketebalan garis
+                background: var(--Secondary-900);
+                margin-top: 10px;      // jarak dari header
+                border-radius: 10px;
+            }
 
             .level-container {
                 display: grid;
@@ -200,12 +251,20 @@ const visibility = async () => {
 
                 .date,
                 .questionTotal,
-                .point {
+                .point,
+                .tipelatihan {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     width: 100%;
                     margin-bottom: 10px; // <-- Tambah jarak
+                }
+
+                .type-badge-inline {
+                    background: var(--Info-50, #e9f5ff);
+                    padding: 4px 14px;
+                    border-radius: 10px;
+                    font-size: 16px;
                 }
             }
 
@@ -238,9 +297,12 @@ const visibility = async () => {
 
             .action {
                 justify-items: start;
+                grid-column: 1 / -1;
+                width: 100%;
 
                 button {
                     margin-bottom: 15px;
+                    width: 100%;
                 }
             }
         }
@@ -274,6 +336,22 @@ const visibility = async () => {
 
 /* Target Ponsel */
 @media (max-width: 576px) {
+    .page-header {
+        display: flex;
+        align-items: center;
+        gap: 10px; // jarak antara icon & title
+        margin-bottom: 15px;
+
+        svg { //setting ukuran svg
+            width: 19px !important;   
+            height: 19px !important;
+        }
+
+        .page-title { //setting ukuran judul 
+            font-size: 17.5px !important; 
+        }
+    }
+    
     .page-body {
         h3 {
             font-size: 24px; // Kecilkan font

@@ -42,22 +42,23 @@ onMounted(async () => {
             <div class="card">
                 <div class="card-header">
                     <h3>{{ data?.name }}</h3>
-                    <div class="level-container">
+                    <!-- <div class="level-container">
                         <div :class="['item', { active: data?.level == 1 }]">1</div>
                         <div :class="['item', { active: data?.level == 2 }]">2</div>
                         <div :class="['item', { active: data?.level == 3 }]">3</div>
-                    </div>
+                    </div> -->
                 </div>
                 <div class="card-body">
                     <div class="description">
                         <div v-html="data?.description"></div>
                     </div>
                     <div class="data">
-                        <div class="date">Tanggal Dikerjakan : <span>{{ formatDate(data?.date) }}</span></div>
+                        <div class="date">Tanggal Dibuat : <span>{{ formatDate(data?.date) }}</span></div>
                         <div class="questionTotal">Jumlah Soal : <span>{{ data?.questions?.length }} Soal</span></div>
                         <div class="point">Poin Lolos : <span>60 Poin</span></div>
                     </div>
                     <div class="summary-data">
+                        <p>Tanggal Mengerjakan Latihan : <span>{{ formatDate(data?.date) }}</span></p>
                         <p>Perolehan Poin : <span>{{ data?.quizPoint }} Poin</span></p>
                         <p>Soal Dikerjakan : <span>{{ data?.answers?.length }} Soal</span></p>
                         <p>Soal Tidak Dikerjakan : <span>{{ data?.questions?.length - data?.answers?.length }}
@@ -216,7 +217,7 @@ onMounted(async () => {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    font-size: 25px;
+                    font-size: 20px;
                     margin-bottom: 5px; // <-- Tambah jarak kecil
 
                     span {
@@ -333,16 +334,16 @@ onMounted(async () => {
                 .description,
                 .data,
                 .summary-data p {
-                    font-size: 16px; // Kecilkan font
+                    font-size: 15px; // Kecilkan font
                 }
 
                 .data span,
                 .summary-data p span {
-                    font-size: 16px; // Samakan font
+                    font-size: 14px; // Samakan font
                 }
 
                 .summary-data h1 {
-                    font-size: 32px; // Kecilkan font Lulus
+                    font-size: 40px; // Kecilkan font Lulus
                 }
 
                 .action {

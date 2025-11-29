@@ -148,7 +148,7 @@ const handleStatusFilter = (params) => {
                     <!-- edit button -->
                     <ButtonComponent 
                         label="Edit Data Anak" 
-                        class="outline secondary" 
+                        class="secondary" 
                         display="border"
                         size="large"
                     />
