@@ -33,9 +33,6 @@ const handleWorkMode = (params) => {
             <p class="name">{{ props.name }}</p>
             <p class="parent" v-if="props.parentName && authStore.user.role == 1">{{ props.parentName }}</p>
             <p class="parent" v-else-if="props.teacherName && authStore.user.role == 2">{{ props.teacherName }}</p>
-            <div class="code">
-                <CopyIcon /> {{ props.code }}
-            </div>
         </div>
         <div class="card-footer">
             <button-component label="Detail" size="full" @click="handleWorkMode('detail')" />
