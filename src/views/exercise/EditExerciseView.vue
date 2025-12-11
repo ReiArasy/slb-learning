@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import api from '@/utils/api';
@@ -12,10 +12,12 @@ import QuestionBankModal from '@/components/modal/QuestionBankModal.vue';
 import ConfirmComponent from '@/components/confirm/ConfirmComponent.vue';
 
 const baseUrl = import.meta.env.VITE_APP_API_URL;
+const isLoading = ref(false)
 
 const route = useRoute();
 const router = useRouter();
 
+const id = route.params.id
 const isModalShowed = ref(false); // Bank Soal
 const isConfirmOpen = ref(false); // Konfirmasi Submit
 
@@ -23,14 +25,9 @@ const name = ref('');
 const description = ref('');
 const level = ref(null);
 const errors = ref({}); // Validasi error (diubah ke object)
-const isLoading = ref(false)
 
 const showConfirmation = () => {
     isConfirmOpen.value = true;
-};
-
-const handleLevel = (val) => {
-    level.value = val;
 };
 
 const handleConfirmAction = () => {
@@ -42,22 +39,31 @@ const handleCancelAction = () => {
     isConfirmOpen.value = false; // Tutup modal
 };
 
+onMounted(async () => {
+    await api.get(`/exercise/${id}`)
+        .then(res => {
+            console.log(res);
+            name.value = res.data.data.name
+            description.value = res.data.data.description
+        }).catch(e => {
+            console.log(e);
+        })
+})
+
 const submit = async () => {
     errors.value = {}; // Reset errors
     isLoading.value = true
 
     // Kirim data ke API
-    await api.post(`/exercise`, {
-        childrenId: route.params.id,
+    await api.put(`/exercise/${id}`, {
         name: name.value,
         description: description.value,
-        // level: level.value,
     }).then(res => {
-        router.push({ name: 'childs.detail', params: route.params.id });
+        router.push({ name: 'exercise.quiz.list', params: route.params.id });
     }).catch(e => {
         if (e.status === 422) errors.value = e.response.data.errors;
     }).finally(() => {
-        isLoading.value = false
+        isLoading.value = true
     })
 };
 </script>
@@ -66,16 +72,16 @@ const submit = async () => {
     <div class="container">
         <ConfirmComponent v-if="isConfirmOpen" title="Simpan latihan?"
             message="Apakah Anda yakin untuk menyimpan latihan?" confirmText="Simpan" cancelText="Batal"
-            @confirm="handleConfirmAction" @cancel="handleCancelAction" :isBtnLoading="isLoading" />
+            @confirm="handleConfirmAction" @cancel="handleCancelAction" />
 
         <QuestionBankModal v-if="isModalShowed" :questions="questionBank" :method="method"
             :methodLabel="methodLabel.label" :level="level" :questionType="objectValue" :insertQuestion="insertQuestion"
             :handleQuestionBank="handleQuestionBank" />
         <div class="page-header exercise">
-            <router-link :to="{ name: 'childs.detail', params: route.params.id }">
+            <router-link :to="{ name: 'exercise.quiz.list', params: route.params.id }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Buat Latihan Baru</h1>
+            <h1 class="page-title">Edit Latihan</h1>
         </div>
         <div class="page-body">
             <div class="form">
@@ -89,8 +95,8 @@ const submit = async () => {
                     <WysiwygEditorComponent v-model="description" class="textarea" />
                 </div>
 
-                <ButtonComponent :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Simpan'" size="full"
-                    class="secondary" @click="showConfirmation" />
+                <ButtonComponent :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Simpan'"
+                    size="full" class="secondary" @click="showConfirmation" />
             </div>
         </div>
     </div>

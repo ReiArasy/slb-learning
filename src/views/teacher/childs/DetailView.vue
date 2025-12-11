@@ -3,16 +3,16 @@ import child from '@/assets/images/child.png'
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import ConfirmComponent from '@/components/confirm/ConfirmComponent.vue';
 import FilterModal from '@/components/modal/FilterModal.vue';
+import InformationModal from '@/components/modal/InformationModal.vue';
 import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
 import FilterIcon from '@/components/shape/FilterIcon.vue';
+import InfoIcon from '@/components/shape/InfoIcon.vue';
 import { formatDate } from '@/helpers/formatDate';
+import { authStore } from '@/stores/AuthStore';
 import { workStore } from '@/stores/WorkStore';
 import api from '@/utils/api';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
-const isFilterExerciseShowed = ref(false)
-const isFilterMaterialShowed = ref(false)
 
 const route = useRoute()
 const router = useRouter()
@@ -22,16 +22,42 @@ const points = ref(0)
 const dataContainer = ref(null)
 const activeSlide = ref(0)
 const isWorkMode = workStore.isWorkMode
+const isShowModal = ref(false)
+const isLoading = ref(false)
 
 onMounted(async () => {
     await api(`/childs/${id}`)
         .then((res) => {
-            console.log(res);
             data.value = res.data.data
+
+            data.value.exercises.forEach(d => {
+                d.exercisePoint = 0
+
+                d.quiz.forEach(q => {
+                    d.exercisePoint += parseInt(q.quizPoint) || 0
+                })
+
+                d.exercisePoint = Math.round(d.exercisePoint / d.quiz.length) || 0
+
+                points.value += parseInt(d.exercisePoint)
+
+            })
+            points.value = Math.round(points.value / data.value.exercises.length) || 0
+
+            // calculate showed material
+            if (workStore.isWorkMode || authStore.user.role == 2)
+                filterShowedMaterial()
+
         }).catch((err) => {
             console.log(err);
+        }).finally(() => {
+            isLoading.value = false
         })
 })
+
+const filterShowedMaterial = () => {
+    data.value.materials = data.value.materials.filter(d => d.isHidden == false)
+}
 
 /**
  * Fungsi untuk melakukan scrolling ke slide yang dipilih
@@ -71,31 +97,13 @@ const handleScroll = () => {
     activeSlide.value = slideIndex;
 };
 
-
-const handleFilterModal = (params) => {
-    if (params == 'exercise') {
-        isFilterExerciseShowed.value = !isFilterExerciseShowed.value
-        isFilterMaterialShowed.value = false
-    } else {
-        isFilterExerciseShowed.value = false
-        isFilterMaterialShowed.value = !isFilterMaterialShowed.value
-    }
-}
-
-const handleDateFilter = (params) => {
-    console.log(params);
-
-    // olah data berdasarkan filter
-}
-
-const handleStatusFilter = (params) => {
-    console.log(params);
-
-    // olah data berdasarkan filter
+const handleModal = () => {
+    isShowModal.value = !isShowModal.value
 }
 </script>
 
 <template>
+    <InformationModal v-if="isShowModal" :handleModal="handleModal" />
     <div class="container">
         <div class="page-header">
             <router-link :to="{ name: 'childs.index' }">
@@ -117,37 +125,28 @@ const handleStatusFilter = (params) => {
                     </span>
                     <span class="name">
                         <p>Nama Orang Tua :</p>
-                        <p class="value">{{ data?.parent.fullName }}</p>
-                    </span>
-                    <span class="name">
-                        <p>Kode Unik :</p>
-                        <p class="value">{{ data?.child.code }}</p>
-                    </span>
-                    <span class="level">
-                        <p>Level Anak </p>
-                        <div class="level-container">
-                            <div :class="['item', { active: data?.child?.level == 1 }]">1</div>
-                            <div :class="['item', { active: data?.child?.level == 2 }]">2</div>
-                            <div :class="['item', { active: data?.child?.level == 3 }]">3</div>
-                        </div>
+                        <p class="value">{{ data?.child.parent.fullName }}</p>
                     </span>
                 </div>
+                <ButtonComponent v-if="!isWorkMode" label="Edit Data Anak" class="secondary" display="border"
+                    size="large" @click="router.push({ name: 'childs.edit', params: { id: id } })" />
             </div>
             <div class="data-wrapper">
                 <div class="data-swiper" ref="dataContainer" @scroll="handleScroll">
 
                     <div class="swiper-slide-manual">
                         <div class="card exercises">
-                            <FilterModal :handleModal="handleFilterModal" :handleDateFilter="handleDateFilter"
-                                :handleStatusFilter="handleStatusFilter" type="exercise"
-                                v-if="isFilterExerciseShowed" />
                             <div class="card-header">
                                 <h3>Latihan</h3>
-                                <FilterIcon class="filterIcon" @click="handleFilterModal('exercise')" />
                             </div>
                             <div class="card-body">
+                                <div v-if="isLoading" class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Sedang mengambil data...</p>
+                                </div>
                                 <div class="item" v-for="(item, index) in data?.exercises" :key="index"
-                                    @click="$router.push({ name: 'exercise.quiz.list', params: { id: item._id } })">
+                                    @click="router.push({ name: 'exercise.quiz.list', params: { id: item._id } })"
+                                    v-else>
                                     <div class="point">{{ item?.exercisePoint ?? 0 }}</div>
                                     <div class="identity">
                                         <p class="title">{{ item.name }}</p>
@@ -157,30 +156,31 @@ const handleStatusFilter = (params) => {
                             </div>
                             <div class="card-footer" v-if="!isWorkMode">
                                 <ButtonComponent label="Buat Latihan" class="secondary" size="large"
-                                    @click="$router.push({ name: 'exercise.create', params: id })" />
+                                    @click="router.push({ name: 'exercise.create', params: id })" />
                             </div>
                         </div>
                     </div>
 
                     <div class="swiper-slide-manual">
                         <div class="card materials">
-                            <FilterModal :handleModal="handleFilterModal" :handleDateFilter="handleDateFilter"
-                                :handleStatusFilter="handleStatusFilter" type="material"
-                                v-if="isFilterMaterialShowed" />
                             <div class="card-header">
                                 <h3>Materi</h3>
-                                <FilterIcon class="filterIcon" @click="handleFilterModal('material')" />
                             </div>
                             <div class="card-body">
+                                <div v-if="isLoading" class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Sedang mengambil data...</p>
+                                </div>
                                 <div class="item" v-for="(item, index) in data?.materials" :key="index"
-                                    @click="router.push({ name: 'material.overview', params: { id: id, materialId: item._id } })">
+                                    @click="router.push({ name: 'material.overview', params: { id: id, materialId: item._id } })"
+                                    v-else>
                                     <p class="title">{{ item.title }}</p>
                                     <div class="category">{{ item.method }}</div>
                                 </div>
                             </div>
                             <div class="card-footer" v-if="!isWorkMode">
                                 <ButtonComponent label="Buat Materi" class="primary" size="large"
-                                    @click="$router.push({ name: 'material.create', params: id })" />
+                                    @click="$router.push({ name: 'material.createMethod', params: id })" />
                             </div>
                         </div>
                     </div>
@@ -237,6 +237,10 @@ const handleStatusFilter = (params) => {
             font-weight: bold;
             color: var(--Secondary-900);
             font-family: 'Ubuntu Sans';
+        }
+
+        .info {
+            cursor: pointer;
         }
 
         .level-container {
@@ -327,6 +331,14 @@ const handleStatusFilter = (params) => {
                 border-radius: 10px;
                 padding: 30px;
 
+                .loading-state {
+                    min-height: 75vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                }
+
                 .card-header {
                     font-size: 30px;
                     margin-bottom: 20px;
@@ -341,6 +353,10 @@ const handleStatusFilter = (params) => {
             .exercises.card {
                 position: relative;
                 background-color: var(--White);
+
+                .spinner {
+                    border-top-color: var(--Secondary-900);
+                }
 
                 .card-header {
                     color: var(--Secondary-900);

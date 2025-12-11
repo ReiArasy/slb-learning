@@ -1,4 +1,5 @@
 <script setup>
+import HorrayComponent from '@/components/alerts/HorrayComponent.vue';
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
 import HorrayIcon from '@/components/shape/HorrayIcon.vue';
@@ -7,33 +8,45 @@ import { useQuizStore } from '@/stores/quiz';
 import api from '@/utils/api';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { Vue3Lottie } from 'vue3-lottie';
+import horrayAnimation from '../../assets/images/horray_animation.json'
 
+
+const isShowHorray = ref(true)
 const route = useRoute()
 const router = useRouter()
 const data = ref([])
 const id = route.params.id
 const quizId = route.params.quizId
 const correctAnswer = ref(0)
+const isLoading = ref(false)
 
 onMounted(async () => {
     api.get(`/exercise/${id}/quiz/${quizId}`)
         .then((res) => {
+            isLoading.value = true
             data.value = res.data.data
 
+            // Menghitung jawaban benar berdasarkan similarityPoint
+            // Ini berlaku generic untuk semua method termasuk Aritmatika
             data.value.answers.map(d => {
                 if (d.similarityPoint > 0) correctAnswer.value++
             })
         })
         .catch((err) => {
             console.log(err);
+        }).finally(() => {
+            isLoading.value = false
         })
 })
 </script>
 
 <template>
+
+    <HorrayComponent @close="isShowHorray = false" v-if="isShowHorray" />
     <div class="container">
         <div class="page-header">
-            <router-link :to="{ name: 'exercise.quiz.overview', params: { id: id } }">
+            <router-link :to="{ name: 'exercise.quiz.list', params: { id: id } }">
                 <ChevronLeftIcon />
             </router-link>
             <h1 class="page-title">Hasil Latihan</h1>
@@ -42,13 +55,12 @@ onMounted(async () => {
             <div class="card">
                 <div class="card-header">
                     <h3>{{ data?.name }}</h3>
-                    <div class="level-container">
-                        <div :class="['item', { active: data?.level == 1 }]">1</div>
-                        <div :class="['item', { active: data?.level == 2 }]">2</div>
-                        <div :class="['item', { active: data?.level == 3 }]">3</div>
-                    </div>
                 </div>
-                <div class="card-body">
+                <div v-if="isLoading" class="loading-state" style="background: unset;">
+                    <div class="spinner" style="border-top-color: var(--Secondary-900);"></div>
+                    <p>Sedang mengambil data...</p>
+                </div>
+                <div class="card-body" v-else>
                     <div class="description">
                         <div v-html="data?.description"></div>
                     </div>
@@ -70,7 +82,8 @@ onMounted(async () => {
                         <h1 v-html="data?.quizPoint >= 60 ? 'Lulus' : 'Tidak Lulus'"></h1>
                     </div>
                     <div class="action">
-                        <HorrayIcon class="icon" />
+                        <Vue3Lottie style="width: 60%;" :animationData="horrayAnimation" :loop="true"
+                            :autoPlay="true" />
                         <div class="btn-group">
                             <ButtonComponent label="Coba Lagi" display="border" class="secondary"
                                 @click="router.push({ name: 'exercise.quiz.overview', params: { id: id, quizId: quizId } })" />
@@ -112,59 +125,12 @@ onMounted(async () => {
         box-shadow: 0 5.192px 31.153px 0 rgba(0, 0, 0, 0.25);
 
         .card-header {
-            display: grid;
-            grid-template-columns: 1fr auto; // <-- Diubah dari 80%
+            display: flex; // Ubah dari Grid ke Flex karena Level dihapus
+            justify-content: center; // Judul di tengah (opsional, bisa start)
             align-items: center;
             margin-bottom: 40px;
-            gap: 30px; // <-- Tambahkan gap
-
-            .level-container {
-                display: grid;
-                grid-template-columns: auto auto auto;
-                gap: 20px;
-                justify-content: end; // <-- Pastikan rata kanan
-
-                .item {
-                    padding: 25px 20px;
-                    border-radius: 10px;
-                    font-size: 30px;
-                    font-weight: bold;
-                    font-family: 'Ubuntu Sans';
-                    border: 2px solid;
-                    text-align: center;
-                    cursor: default; // <-- Tidak perlu diklik
-
-                    &:nth-child(1) {
-                        border-color: var(--Secondary-900);
-                        color: var(--Secondary-900);
-
-                        &.active {
-                            background-color: var(--Secondary-900);
-                            color: var(--White);
-                        }
-                    }
-
-                    &:nth-child(2) {
-                        border-color: var(--Ternary-500);
-                        color: var(--Ternary-500);
-
-                        &.active {
-                            background-color: var(--Ternary-500);
-                            color: var(--White);
-                        }
-                    }
-
-                    &:nth-child(3) {
-                        border-color: var(--Primary-900);
-                        color: var(--Primary-900);
-
-                        &.active {
-                            background-color: var(--Primary-900);
-                            color: var(--White);
-                        }
-                    }
-                }
-            }
+            
+            // Level container styles dihapus
         }
 
         .card-body {
@@ -178,7 +144,6 @@ onMounted(async () => {
                 font-size: 20px;
                 color: var(--Neutral-700);
 
-                // Atur agar style HTML dari v-html terlihat
                 :deep(p) {
                     margin-bottom: 1rem;
                 }
@@ -202,7 +167,7 @@ onMounted(async () => {
                     justify-content: space-between;
                     align-items: center;
                     width: 100%;
-                    margin-bottom: 5px; // <-- Tambah jarak kecil
+                    margin-bottom: 5px;
 
                     span {
                         font-weight: bold;
@@ -217,7 +182,7 @@ onMounted(async () => {
                     justify-content: space-between;
                     align-items: center;
                     font-size: 25px;
-                    margin-bottom: 5px; // <-- Tambah jarak kecil
+                    margin-bottom: 5px;
 
                     span {
                         font-size: 25px;
@@ -233,9 +198,9 @@ onMounted(async () => {
             }
 
             .action {
-                display: flex; // <-- Tambahan
-                flex-direction: column; // <-- Tambahan
-                justify-content: space-between; // <-- Tambahan
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
 
                 .icon {
                     width: 100%;
@@ -252,8 +217,6 @@ onMounted(async () => {
         }
 
         .card-footer {
-
-            // Style ini tidak ada di HTML Anda
             hr {
                 border: 1px solid var(--Secondary-900);
                 margin: 10px 0;
@@ -276,32 +239,27 @@ onMounted(async () => {
 /* Target Tablet (Large) */
 @media (max-width: 1024px) {
     .page-body .card {
-        padding: 3rem; // Kurangi padding
+        padding: 3rem;
 
         .card-header {
-            grid-template-columns: 1fr; // <-- Pecah header jadi 1 kolom
-            gap: 25px;
-            justify-items: start; // Ratakan kiri
-
-            .level-container {
-                justify-content: start; // Ratakan kiri
-            }
+            // Level styles dihapus
+            justify-content: start; // Di mobile rata kiri biasanya lebih rapi
         }
 
         .card-body {
-            grid-template-columns: 1fr; // <-- Pecah body jadi 1 kolom
+            grid-template-columns: 1fr;
             gap: 30px;
 
             .action {
                 .icon {
-                    max-width: 300px; // <-- Batasi lebar ikon
-                    align-self: center; // <-- Pusatkan ikon
-                    order: -1; // <-- Pindahkan ikon ke atas
+                    max-width: 300px;
+                    align-self: center;
+                    order: -1;
                     margin-bottom: 30px;
                 }
 
                 .btn-group {
-                    margin-bottom: 15px; // Kurangi margin
+                    margin-bottom: 15px;
                 }
             }
         }
@@ -312,46 +270,39 @@ onMounted(async () => {
 @media (max-width: 576px) {
     .page-body {
         h3 {
-            font-size: 24px; // Kecilkan font
+            font-size: 24px;
         }
 
         .card {
-            padding: 1.5rem; // Padding super kecil
+            padding: 1.5rem;
 
-            .card-header .level-container {
-                gap: 10px; // Kurangi gap
-
-                .item {
-                    padding: 15px 10px; // Kecilkan box
-                    font-size: 22px; // Kecilkan font
-                }
-            }
+            // Level responsive styles dihapus
 
             .card-body {
-                gap: 40px; // Beri jarak lebih antar section
+                gap: 40px;
 
                 .description,
                 .data,
                 .summary-data p {
-                    font-size: 16px; // Kecilkan font
+                    font-size: 16px;
                 }
 
                 .data span,
                 .summary-data p span {
-                    font-size: 16px; // Samakan font
+                    font-size: 16px;
                 }
 
                 .summary-data h1 {
-                    font-size: 32px; // Kecilkan font Lulus
+                    font-size: 32px;
                 }
 
                 .action {
                     .btn-group {
-                        flex-direction: column; // Tumpuk tombol
+                        flex-direction: column;
                         width: 100%;
 
                         button {
-                            width: 100%; // Penuhi layar
+                            width: 100%;
                         }
                     }
                 }

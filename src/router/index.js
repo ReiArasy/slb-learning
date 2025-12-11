@@ -58,6 +58,11 @@ const router = createRouter({
 							component: () => import(`../views/childs/CreateView.vue`)
 						},
 						{
+							path: '/dashboard/childs/:id/edit',
+							name: 'childs.edit',
+							component: () => import(`../views/teacher/childs/EditView.vue`)
+						},
+						{
 							path: '/dashboard/childs/:id',
 							name: 'childs.detail',
 							component: () => import(`../views/childs/DetailView.vue`)
@@ -76,6 +81,12 @@ const router = createRouter({
 							beforeEnter: teacherMiddleware
 						},
 						{
+							path: '/exercise/edit/:id',
+							name: 'exercise.edit',
+							component: () => import('../views/exercise/EditExerciseView.vue'),
+							beforeEnter: teacherMiddleware
+						},
+						{
 							path: '/exercise/work/:id',
 							name: 'exercise.work',
 							children: [
@@ -85,10 +96,33 @@ const router = createRouter({
 									component: () => import('../views/exercise/QuizListView.vue'),
 								},
 								{
+									path: '/exercise/quiz/method/:id',
+									name: 'exercise.quiz.method',
+									component: () => import('../views/exercise/SelectCreateMethodView.vue'),
+									beforeEnter: teacherMiddleware
+								},
+								{
 									path: '/exercise/quiz/create/:id',
 									name: 'exercise.quiz.create',
 									component: () => import('../views/exercise/CreateQuizView.vue'),
 									beforeEnter: teacherMiddleware
+								},
+								{
+									path: '/exercise/quiz/generate/:id',
+									name: 'exercise.quiz.generate',
+									component: () => import('../views/exercise/GenerateQuizView.vue'),
+									beforeEnter: teacherMiddleware
+								},
+								{
+									path: '/exercise/quiz/edit/:id/:quizId',
+									name: 'exercise.quiz.edit',
+									component: () => import('../views/exercise/EditQuizView.vue'),
+									beforeEnter: teacherMiddleware
+								},
+								{
+									path: '/exercise/quiz/detail/:id/:quizId',
+									name: 'exercise.quiz.detail',
+									component: () => import('../views/exercise/DetailQuizView.vue'),
 								},
 								{
 									path: '/exercise/quiz/overview/:id/:quizId',
@@ -127,7 +161,17 @@ const router = createRouter({
 					name: 'material',
 					children: [
 						{
-							path: '/material/:id/create',
+							path: '/material/:id/create/method',
+							name: 'material.createMethod',
+							component: () => import('../views/material/SelectCreateMethodView.vue')
+						},
+						{
+							path: '/material/:id/create/generate',
+							name: 'material.generate',
+							component: () => import('../views/material/GenerateView.vue')
+						},
+						{
+							path: '/material/:id/create/manual',
 							name: 'material.create',
 							component: () => import('../views/material/CreateView.vue'),
 							beforeEnter: teacherMiddleware

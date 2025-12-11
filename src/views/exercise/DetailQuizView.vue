@@ -5,6 +5,8 @@ import AudioPlayerComponent from '@/components/fields/AudioPlayerComponent.vue';
 import AudioRecorderComponent from '@/components/fields/AudioRecorderComponent.vue';
 import FileUploadComponent from '@/components/fields/FileUploadComponent.vue';
 import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
+import EyeIcon from '@/components/shape/EyeIcon.vue';
+import EyeSlashIcon from '@/components/shape/EyeSlashIcon.vue';
 import ToastComponent from '@/components/toast/ToastComponent.vue';
 import { formatDate } from '@/helpers/formatDate';
 import { formatDurationVerbose } from '@/helpers/formatDurationVerbose';
@@ -19,146 +21,91 @@ const baseUrl = import.meta.env.VITE_APP_API_URL
 const route = useRoute()
 const router = useRouter()
 
-// Modal & Toast State
-const isModalShowed = ref(false); // Bank Soal
-const isConfirmOpen = ref(false); // Konfirmasi Submit
-const confirmMsg = ref(''); // (Tidak terpakai, tapi ada)
-const isShowToast = ref(false);
-const toastMsg = ref('');
-const toastType = ref('success');
-const isLoading = ref(false)
-
 const id = route.params.id
 const quizId = route.params.quizId
 const quizData = ref([])
-const answers = ref([])
+const questions = ref([])
+const isLoading = ref(false)
 
 onMounted(async () => {
+    getData()
+})
+
+const getData = async () => {
     await api.get(`/exercise/${id}/quiz/${quizId}`)
         .then((res) => {
             isLoading.value = true
             quizData.value = res.data.data
+            questions.value = res.data.data.questions
 
-            initAnswersData()
-
-            console.log(quizData)
+            console.log(questions)
         })
         .catch((err) => {
             console.log(err);
         }).finally(() => {
             isLoading.value = false
         })
-})
+}
 
-const initAnswersData = () => {
-    quizData.value.questions.forEach(item => {
-        const findAnswer = quizData.value.answers.find(d => d.questionId == item._id)
-        if (!findAnswer) {
-            answers.value.push({
-                // questionId: findAnswer.questionId,
-                question: item.question,
-                method: item.method,
-                code: item.code,
-                similarityPoint: 0,
-                answer: null,
-                duration: null,
-                timeOpened: null,
-                timeAnswered: null,
-            })
-        } else {
-            answers.value.push({
-                // questionId: findAnswer.questionId,
-                question: item.question,
-                method: item.method,
-                code: item.code,
-                similarityPoint: findAnswer.similarityPoint,
-                answer: findAnswer.answer,
-                duration: findAnswer.duration,
-                timeOpened: findAnswer.timeOpened,
-                timeAnswered: findAnswer.timeAnswered,
-            })
-        }
-
-    });
-
-    console.log(answers.value);
-
+const visibility = async () => {
+    await api.post(`exercise/${id}/quiz/${quizId}/visibility`)
+        .then(res => {
+            getData()
+        })
+        .catch(e => {
+            console.log(e);
+        })
 }
 </script>
 
 <template>
     <div class="container">
         <div class="page-header">
-            <router-link :to="{ name: 'exercise.quiz.overview', params: { id, quizId } }"
-                v-if="authStore.user.role == 1">
+            <router-link :to="{ name: 'exercise.quiz.list', params: { id, quizId } }">
                 <ChevronLeftIcon />
             </router-link>
-            <router-link :to="{ name: 'exercise.quiz.list', params: { id } }" v-else>
-                <ChevronLeftIcon />
-            </router-link>
-            <h1 class="page-title">Review Jawaban</h1>
+            <h1 class="page-title">Preview Soal : {{ quizData.name }}</h1>
         </div>
         <div class="page-body">
-
-            <div v-if="isLoading" class="loading-state" style="background: unset;">
+            <div class="btn-group">
+                <ButtonComponent label="Edit Quiz" class="secondary" size="small"
+                    @click="router.push({ name: 'exercise.quiz.edit', params: { id: id, quizId: quizId } })"
+                    v-if="!isWorkMode && authStore.user.role == 1" :isDisabled="quizData?.answers?.length > 0" />
+                <ButtonComponent :label="!quizData.isHidden ? 'Sembunyikan' : 'Tampilkan'"
+                    :icon="!quizData.isHidden ? EyeSlashIcon : EyeIcon" class="secondary" size="small" display="border"
+                    @click="visibility" v-if="!isWorkMode && authStore.user.role == 1" />
+            </div>
+            <div v-if="isLoading" class="loading-state">
                 <div class="spinner"></div>
                 <p>Sedang mengambil data...</p>
             </div>
             <div class="grid-container" v-else>
                 <div class="answers-container">
-                    <div class="item" v-for="(item, index) in answers" :key="index">
-                        <div class="score">Skor : {{ parseInt(item.similarityPoint) }}/100</div>
-                        <div class="time">
-                            <div class="timing">
-                                <div class="opened">Dibuka {{ formatDate(item.timeOpened, 'long') }}</div>
-                                <div class="answered">Dijawab {{ formatDate(item.timeAnswered, 'long') }}</div>
-                            </div>
-                            <div class="duration">Total Durasi <br> <span>{{ formatDurationVerbose(item.duration)
-                                    }}</span></div>
-                        </div>
+                    <div class="item" v-for="(item, index) in questions" :key="index">
+                        <div class="score">Soal Nomor : {{ index + 1 }}</div>
                         <div class="method">{{ formatMethodLabel(item.method) }}</div>
                         <div class="guide">
-                            <span v-if="[1, 2, 4].includes(item?.method)">Tulislah jawaban di kertas, lalu upload
+                            <span v-if="[1, 2, 4, 6].includes(item?.method)">Tulislah jawaban di kertas, lalu upload
                                 sebagai foto/gambar.</span>
                             <span v-if="[3, 5].includes(item?.method)">Rekam suara Anda sebagai jawaban.</span>
                         </div>
-                        <!-- if 1 = tampilkan tag audio -->
+
                         <AudioPlayerComponent v-if="item?.method == 1" :text="item?.question?.value" :autoplay="false"
                             displayStyle="text" />
-                        <!-- if 2 = tampilkan text untuk ditulis ulang -->
-                        <!-- if 3 = tampilkan text dan recorder untuk dibaca -->
-                        <!-- if 4 = mengurutkan kata -->
-                        <h2 class="question" v-else-if="item?.method == 2 || item?.method == 3 || item?.method == 4">
-                            {{
-                                item?.question.value }}</h2>
-                        <!-- if 5 = menebak cepat -->
-                        <!-- if isHexColor true -->
+
+                        <h2 class="question" v-else-if="[2, 3, 4, 6].includes(item?.method)">
+                            {{ item?.question.value }}
+                        </h2>
+
                         <div class="object-color" v-if="item?.question?.type == 'hex'"
                             :style="`background-color: ${item?.question?.value}`"></div>
-                        <!-- if isImage true -->
                         <div class="object-image" v-if="item?.question?.type == 'path'">
                             <img :src="`${baseUrl}/api/v1/${item?.question?.value}`" alt="Pertanyaan">
                         </div>
-                        <div class="answer">
-                            <p>Jawaban</p>
-                            <div class="answered" v-if="item?.answer?.file">
-                                <img :src="item.answer.file" alt="Answer Image" v-if="[1, 2, 4].includes(item?.method)">
-                                <AudioPlayerComponent v-else-if="[3, 5].includes(item?.method)" :autoplay="false"
-                                    :text="item?.answer?.file" :isBase64="true" displayStyle="player" />
-                                <div class="transcript">
-                                    <h3>Transkrip</h3>
-                                    <p>{{ item.answer.text }}</p>
-                                </div>
-                            </div>
-                            <h2 class="unanswerd" v-else>Tidak ada jawaban</h2>
-                        </div>
+
+                        <p>Kunci Jawaban : </p>
+                        <h2>{{ item.key }}</h2>
                     </div>
-                </div>
-                <div class="attitude">
-                    <h3>Penilaian Perilaku</h3>
-                    <div class="point">Nilai Perilaku : <strong>{{ quizData?.attitudePoint?.point }}</strong>
-                    </div>
-                    <div class="description" v-html="quizData?.attitudePoint?.note"></div>
                 </div>
             </div>
         </div>
@@ -166,6 +113,14 @@ const initAnswersData = () => {
 </template>
 
 <style lang="scss" scoped>
+.btn-group {
+    display: flex;
+    justify-content: start;
+    gap: 10px;
+    align-items: center;
+}
+
+
 /* Tambahkan style untuk soal gambar dan warna */
 // Style ini tidak terpakai, pindahkan ke .object-image
 .question-image {
@@ -182,10 +137,19 @@ const initAnswersData = () => {
     border: 1px solid #eee;
 }
 
+.loading-state {
+    background-color: unset;
+
+    .spinner {
+        border-top-color: var(--Secondary-900);
+    }
+}
+
 .grid-container {
     display: grid;
-    grid-template-columns: 3fr 1fr; // <-- Diubah dari 75% auto
+    grid-template-columns: 1fr; // <-- Diubah dari 75% auto
     gap: 30px;
+    margin-top: 30px;
 
     .answers-container {
         color: var(--Secondary-900);

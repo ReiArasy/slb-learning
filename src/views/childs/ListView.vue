@@ -36,11 +36,9 @@ const filteredChilds = computed(() => {
 
     return childs.value.filter((item) => {
         const childName = item.child?.fullName?.toLowerCase() || '';
-        const childCode = item.child?.code?.toLowerCase() || '';
         const parentName = item.parentName?.toLowerCase() || '';
 
         return childName.includes(query) ||
-            childCode.includes(query) ||
             parentName.includes(query);
     });
 });
@@ -72,9 +70,8 @@ const destroy = async () => {
 
 <template>
     <div class="container">
-        <ConfirmComponent v-if="isConfirmOpen" title="Hapus Data?"
-            message="Apakah Anda Yakin Untuk Menghapus Anak?" confirmText="Hapus" cancelText="Batal"
-            @confirm="handleConfirmAction" @cancel="handleCancelAction" />
+        <ConfirmComponent v-if="isConfirmOpen" title="Hapus Data?" message="Apakah Anda Yakin Untuk Menghapus Anak?"
+            confirmText="Hapus" cancelText="Batal" @confirm="handleConfirmAction" @cancel="handleCancelAction" />
 
         <div class="page-header">
             <h1 class="page-title">Data Anak {{ authStore.user.role == 1 ? 'Didik' : '' }}</h1>
@@ -85,8 +82,8 @@ const destroy = async () => {
 
             <div class="grid-container">
                 <div class="item" v-for="(item, index) in filteredChilds" :key="index">
-                    <child-component :id="item.child._id" :level="item.child.level ?? null" :name="item.child.fullName"
-                        :code="item.child.code" :parentName="item.parentName ?? null" :method="showConfirmation" />
+                    <child-component :id="item.child._id" :name="item.child.fullName" :parentName="item.child.parent.fullName ?? null"
+                        :teacherName="item.teacherName ?? null" :method="showConfirmation" />
                 </div>
 
                 <div v-if="filteredChilds.length === 0" class="empty-state">

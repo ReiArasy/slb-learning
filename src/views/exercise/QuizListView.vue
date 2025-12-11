@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
 import DoneIcon from '@/components/shape/DoneIcon.vue';
@@ -6,6 +6,7 @@ import LockIcon from '@/components/shape/LockIcon.vue';
 import LockOpenIcon from '@/components/shape/LockOpenIcon.vue';
 import { formatDate } from '@/helpers/formatDate';
 import { authStore } from '@/stores/AuthStore';
+import { latestQuizStore } from '@/stores/LatestQuizStore';
 import { workStore } from '@/stores/WorkStore';
 import api from '@/utils/api';
 import { onMounted, ref } from 'vue';
@@ -14,17 +15,17 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute()
 const router = useRouter()
 
-const isWorkMode = workStore.isWorkMode
-
 const data = ref([])
 const id = route.params.id
 
 const totalQuizPoint = ref(0)
 
+const isLoading = ref(false)
+
 
 onMounted(async () => {
     let params
-    if (isWorkMode) {
+    if (workStore.isWorkMode) {
         params = {
             hidden: false
         }
@@ -34,14 +35,20 @@ onMounted(async () => {
         params: params
     })
         .then((res) => {
-            console.log(res);
+            isLoading.value = true
             data.value = res.data.data
-            console.log(data.value);
+            // get latest quiz, save to session, for validate in form (make a newest level)
+            const latestQuiz = data.value.quiz[data.value.quiz.length - 1]
+            // console.log(latestQuiz ?? []);
+            console.log(latestQuiz);
 
+
+            latestQuizStore.setData(latestQuiz ?? [])
             calculateTotalPoint()
-
         }).catch(err => {
             console.error(err)
+        }).finally(() => {
+            isLoading.value = false
         })
 })
 
@@ -49,6 +56,8 @@ const calculateTotalPoint = () => {
     data.value.quiz.forEach(item => {
         totalQuizPoint.value += parseInt(item.quizPoint) || 0
     });
+
+    totalQuizPoint.value = Math.round(totalQuizPoint.value / data.value.quiz.length) || 0
 }
 
 </script>
@@ -60,20 +69,44 @@ const calculateTotalPoint = () => {
                 <ChevronLeftIcon />
             </router-link>
             <div>
-                <p class="page-title">Kerjakan : <strong>{{ data?.name }}</strong></p>
+                <p class="page-title"><strong>{{ data?.name }}</strong></p>
                 <div class="page-description" v-html="data?.description"></div>
             </div>
         </div>
         <div class="page-body">
+            <ButtonComponent label="Edit latihan" size="small" class="secondary" display="border"
+                @click="router.push({ name: 'exercise.edit', params: { id: id } })"
+                v-if="!workStore.isWorkMode && authStore?.user?.role == 1" />
             <div class="action">
                 <p class="score">Total Skor : <strong>{{ totalQuizPoint }}</strong></p>
-                <ButtonComponent label="Buat Latihan" class="secondary"
-                    @click="router.push({ name: 'exercise.quiz.create', params: { id: id } })" v-if="!isWorkMode && authStore?.user?.role == 1" />
+                <ButtonComponent label="Buat Quiz" class="secondary"
+                    @click="router.push({ name: 'exercise.quiz.method', params: { id: id } })"
+                    :isDisabled="latestQuizStore.getLevel == 3"
+                    v-if="!workStore.isWorkMode && authStore?.user?.role == 1" />
             </div>
-            <div class="quiz-container">
-                <div :class="['item', { disabled: index > 0 ? data?.quiz[index - 1]?.answers?.length == 0 || data?.quiz[index - 1]?.quizPoint < 60 : false }]"
-                    v-for="(item, index) in data?.quiz" :key="index"
-                    @click="(index > 0 ? data?.quiz[index - 1]?.answers?.length == 0 || data?.quiz[index - 1]?.quizPoint < 60 : false) ? null : $router.push({ name: 'exercise.quiz.overview', params: { id: id, quizId: item._id } })">
+            <div v-if="isLoading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Sedang mengambil data...</p>
+            </div>
+            <div class="quiz-container" v-else>
+                <!-- View if work mode is on -->
+                <div :class="['item']" v-for="(item, index) in data?.quiz" :key="index"
+                    @click="router.push({ name: 'exercise.quiz.overview', params: { id: id, quizId: item._id } })"
+                    v-if="workStore.isWorkMode">
+                    <div class="point">{{ item?.quizPoint ?? 0 }}</div>
+                    <div class="identity">
+                        <p class="title">{{ item.name }}</p>
+                        <p class="date">{{ formatDate(item.date) }}</p>
+                    </div>
+                    <div class="status">
+                        <DoneIcon v-if="item.answers.length > 0" />
+                        <LockOpenIcon v-else />
+                    </div>
+                </div>
+                <!-- View if work mode is off -->
+                <div :class="['item']" v-for="(item, index) in data?.quiz" :key="item"
+                    @click="router.push({ name: authStore.user.role == 1 ? 'exercise.quiz.detail' : 'exercise.quiz.review', params: { id: id, quizId: item._id } })"
+                    v-else>
                     <div class="point">{{ item?.quizPoint ?? 0 }}</div>
                     <div class="identity">
                         <p class="title">{{ item.name }}</p>
@@ -82,9 +115,7 @@ const calculateTotalPoint = () => {
                     </div>
                     <div class="status">
                         <DoneIcon v-if="item.answers.length > 0" />
-                        <LockOpenIcon
-                            v-else-if="index > 0 ? data?.quiz[index - 1]?.answers?.length > 0 && data?.quiz[index - 1]?.quizPoint > 60 : true" />
-                        <LockIcon v-else />
+                        <LockOpenIcon v-else />
                     </div>
                 </div>
             </div>
@@ -97,13 +128,21 @@ const calculateTotalPoint = () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin: 30px 0;
     flex-wrap: wrap; // <-- Tambahan: agar rapi jika menyempit
     gap: 15px; // <-- Tambahan: beri jarak jika wrap
 
     p {
         font-size: 35px;
         color: var(--Secondary-900);
+    }
+}
+
+.loading-state {
+    background: unset;
+
+    .spinner {
+        border-top-color: var(--Secondary-900);
     }
 }
 
