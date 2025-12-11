@@ -10,10 +10,10 @@ import api from '@/utils/api';
 const router = useRouter();
 
 // input form
-const name = ref('');
-const disability = ref('');
-const birthDate = ref('');
-const guardian = ref('');
+const fullName = ref('');
+const deafness = ref('');
+const dateOfBirth = ref('');
+const parentName = ref('');
 
 // alerts
 const showAlert = ref(false);
@@ -29,10 +29,10 @@ async function submit() {
 	errors.value = null;
 
 	await api.post(`/childs/`, {
-		name: name.value,
-		disability: disability.value,
-		birth_date: birthDate.value,
-		guardian: guardian.value
+		fullName: fullName.value,
+		deafness: deafness.value,
+		dateOfBirth: dateOfBirth.value,
+		parentName: parentName.value
 	})
 		.then(() => {
 			router.push({ name: 'childs.index' });
@@ -68,18 +68,18 @@ async function submit() {
 					<!-- FORM -->
 					<div class="form-wrapper">
 						<input-component label="Nama Anak" type="text" placeholder="Contoh: Bryan Dayon" class="input"
-							v-model="name" :isInvalid="errors?.name ?? false" :invalidMsg="errors?.name ?? ''" />
+							v-model="fullName" :isInvalid="errors?.fullName ?? false" :invalidMsg="errors?.fullName ?? ''" />
 
 						<input-component label="Jenis Ketunaan" type="text" placeholder="Contoh: Tunagrahita"
-							class="input" v-model="disability" :isInvalid="errors?.disability ?? false"
-							:invalidMsg="errors?.disability ?? ''" />
+							class="input" v-model="deafness" :isInvalid="errors?.deafness ?? false"
+							:invalidMsg="errors?.deafness ?? ''" />
 
-						<input-component label="Tanggal Lahir" type="date" class="input" v-model="birthDate"
-							:isInvalid="errors?.birth_date ?? false" :invalidMsg="errors?.birth_date ?? ''" />
+						<input-component label="Tanggal Lahir" type="date" class="input" v-model="dateOfBirth"
+							:isInvalid="errors?.dateOfBirth ?? false" :invalidMsg="errors?.dateOfBirth ?? ''" />
 
 						<input-component label="Nama Wali" type="text" placeholder="Contoh: Susi" class="input"
-							v-model="guardian" :isInvalid="errors?.guardian ?? false"
-							:invalidMsg="errors?.guardian ?? ''" />
+							v-model="parentName" :isInvalid="errors?.parentName ?? false"
+							:invalidMsg="errors?.parentName ?? ''" />
 
 						<div class="btn-submit">
 							<button-component label="Simpan" size="full" @click="submit" />
