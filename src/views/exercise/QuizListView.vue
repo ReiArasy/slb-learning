@@ -81,7 +81,6 @@ const calculateTotalPoint = () => {
                 <p class="score">Total Skor : <strong>{{ totalQuizPoint }}</strong></p>
                 <ButtonComponent label="Buat Quiz" class="secondary"
                     @click="router.push({ name: 'exercise.quiz.method', params: { id: id } })"
-                    :isDisabled="latestQuizStore.getLevel == 3"
                     v-if="!workStore.isWorkMode && authStore?.user?.role == 1" />
             </div>
             <div v-if="isLoading" class="loading-state">
@@ -111,7 +110,6 @@ const calculateTotalPoint = () => {
                     <div class="identity">
                         <p class="title">{{ item.name }}</p>
                         <p class="date">{{ formatDate(item.date) }}</p>
-                        <div class="category">Level {{ item.level }}</div>
                     </div>
                     <div class="status">
                         <DoneIcon v-if="item.answers.length > 0" />

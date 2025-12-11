@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router';
 import { workStore } from '@/stores/WorkStore';
 import { authStore } from '@/stores/AuthStore';
 
-const props = defineProps(['id', 'level', 'name', 'code', 'parentName', 'teacherName', 'method'])
+const props = defineProps(['id', 'name', 'parentName', 'teacherName', 'method'])
 const router = useRouter()
 
 const handleWorkMode = (params) => {
@@ -25,9 +25,6 @@ const handleWorkMode = (params) => {
     <div class="card">
         <div class="card-header">
             <img :src="child" alt="Child">
-            <div class="level" v-if="props.level">
-                {{ props.level }}
-            </div>
         </div>
         <div class="card-body">
             <p class="name">{{ props.name }}</p>
@@ -56,18 +53,6 @@ const handleWorkMode = (params) => {
         justify-content: center;
         margin-bottom: 10px;
         position: relative;
-
-        .level {
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            background: var(--Ternary-300);
-            padding: 10px 15px;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-            border-radius: 5px;
-        }
     }
 
     img {
@@ -77,15 +62,6 @@ const handleWorkMode = (params) => {
     .name {
         font-size: 25px;
         font-weight: bold;
-    }
-
-    .code {
-        display: flex;
-        justify-content: start;
-        align-items: center;
-        gap: 5px;
-        margin: 10px 0;
-        font-size: 15px;
     }
 
     .button {

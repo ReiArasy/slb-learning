@@ -21,7 +21,7 @@ const isConfirmOpen = ref(false); // Konfirmasi Submit
 
 const name = ref('');
 const description = ref('');
-const level = ref(null);
+// Level dihapus
 const errors = ref({}); // Validasi error (diubah ke object)
 const isLoading = ref(false)
 
@@ -29,9 +29,7 @@ const showConfirmation = () => {
     isConfirmOpen.value = true;
 };
 
-const handleLevel = (val) => {
-    level.value = val;
-};
+// Handle Level dihapus
 
 const handleConfirmAction = () => {
     submit(); // Panggil fungsi submit utama
@@ -51,7 +49,7 @@ const submit = async () => {
         childrenId: route.params.id,
         name: name.value,
         description: description.value,
-        // level: level.value,
+        // level dihapus dari payload
     }).then(res => {
         router.push({ name: 'childs.detail', params: route.params.id });
     }).catch(e => {
@@ -69,7 +67,7 @@ const submit = async () => {
             @confirm="handleConfirmAction" @cancel="handleCancelAction" :isBtnLoading="isLoading" />
 
         <QuestionBankModal v-if="isModalShowed" :questions="questionBank" :method="method"
-            :methodLabel="methodLabel.label" :level="level" :questionType="objectValue" :insertQuestion="insertQuestion"
+            :methodLabel="methodLabel.label" :questionType="objectValue" :insertQuestion="insertQuestion"
             :handleQuestionBank="handleQuestionBank" />
         <div class="page-header exercise">
             <router-link :to="{ name: 'childs.detail', params: route.params.id }">
@@ -123,17 +121,13 @@ textarea.textarea {
 
 .input-flex {
     display: grid;
-    grid-template-columns: 1fr auto; // <-- Diubah ke 1fr auto
-    gap: 20px; // <-- Tambahkan gap
-
-    &.level-wrapper {
-        justify-self: end;
-    }
+    grid-template-columns: 1fr auto;
+    gap: 20px;
 }
 
 /* --- End Input Umum --- */
 
-/* --- Wrapper Input & Level --- */
+/* --- Wrapper Input --- */
 .input-wrapper {
     margin-bottom: 30px;
 
@@ -144,151 +138,7 @@ textarea.textarea {
         margin-bottom: 10px;
         font-size: medium;
     }
-
-    /* Level Selector */
-    &.level-wrapper {
-        .level-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
-
-            .item {
-                padding: 10px 25px;
-                border-radius: 10px;
-                font-size: 20px;
-                font-weight: bold;
-                font-family: 'Ubuntu Sans';
-                border: 2px solid;
-                text-align: center;
-                cursor: pointer;
-                transition: background-color 0.2s, color 0.2s; // <-- Tambahkan transisi
-
-                &:nth-child(1) {
-                    border-color: var(--Secondary-900);
-                    color: var(--Secondary-900);
-
-                    &.active {
-                        background-color: var(--Secondary-900);
-                        color: var(--White);
-                    }
-                }
-
-                &:nth-child(2) {
-                    border-color: var(--Ternary-500);
-                    color: var(--Ternary-500);
-
-                    &.active {
-                        background-color: var(--Ternary-500);
-                        color: var(--White);
-                    }
-                }
-
-                &:nth-child(3) {
-                    border-color: var(--Primary-900);
-                    color: var(--Primary-900);
-
-                    &.active {
-                        background-color: var(--Primary-900);
-                        color: var(--White);
-                    }
-                }
-            }
-        }
-    }
-
-    /* --- Status Invalid (Error) --- */
-    // Dipindahkan ke luar .input-wrapper agar bisa dipakai global
-    .invalid-msg {
-        display: none;
-    }
-
-    label.invalid {
-        color: var(--Danger-900, #CC1D1D);
-    }
-
-    // Seharusnya ini ada di .input-wrapper, bukan di root style
-    &.invalid {
-        label {
-            color: var(--Danger-900, #CC1D1D);
-        }
-
-        textarea {
-            border: 2px solid var(--Danger-900);
-        }
-
-        .item {
-            // Untuk level
-            border-color: var(--Danger-900) !important;
-            background-color: unset;
-        }
-
-        .invalid-msg {
-            display: block;
-            color: var(--Danger-900);
-            font-size: small;
-            margin-top: 10px;
-        }
-    }
-
-    /* --- End Status Invalid --- */
-
-
-    /* Preview Gambar dari Bank Soal */
-    .question-from-bank {
-        color: var(--Danger-900);
-        margin-bottom: 15px;
-
-        img {
-            width: 30%; // <-- Default desktop
-            border-radius: 10px;
-            margin-top: 10px;
-        }
-    }
-}
-
-
-/* --- RESPONSIVE --- */
-
-/* Target Tablet */
-@media (max-width: 768px) {
-    .input-flex {
-        grid-template-columns: 1fr; // <-- Pecah jadi 1 kolom
-    }
-
-    .input-wrapper {
-        .question-from-bank img {
-            width: 50%; // <-- Besarkan gambar preview
-        }
-    }
-}
-
-/* Target Ponsel */
-@media (max-width: 576px) {
-    .input {
-        margin-bottom: 20px;
-    }
-
-    .textarea {
-        margin-bottom: 30px;
-    }
-
-    .input-wrapper {
-        margin-bottom: 20px;
-
-        &.level-wrapper {
-            .level-container {
-                gap: 10px;
-
-                .item {
-                    padding: 8px 15px; // Kecilkan padding
-                    font-size: 16px; // Kecilkan font
-                }
-            }
-        }
-
-        .question-from-bank img {
-            width: 100%; // <-- Penuhi layar
-        }
-    }
+    
+    // Level wrapper styles dihapus
 }
 </style>

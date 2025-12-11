@@ -4,14 +4,16 @@ import { ref } from "vue";
 export const useGenerateQuizStore = defineStore('quiz', () => {
     // State
     const isLoading = ref(false)
+
+    // UPDATE: Level dihapus dari state
     const savedQuiz = ref({
-        level: 0,
         questions: []
     })
 
-    // Action: Reset State (Penting untuk membersihkan data lama)
+    // Action: Reset State
     const resetQuiz = () => {
-        savedQuiz.value = { level: 0, questions: [] }
+        // UPDATE: Reset hanya untuk questions
+        savedQuiz.value = { questions: [] }
     }
 
     // Action: Save Quiz
@@ -28,7 +30,7 @@ export const useGenerateQuizStore = defineStore('quiz', () => {
             // Simulasi API Delay
             await new Promise(resolve => setTimeout(resolve, 1000))
 
-            const batchLevel = payload[0].level
+            // UPDATE: Tidak perlu mengambil batchLevel lagi
 
             const newQuestions = payload.map(element => ({
                 question: element.question,
@@ -36,14 +38,10 @@ export const useGenerateQuizStore = defineStore('quiz', () => {
                 method: element.method,
             }))
 
-            // 4. Update State Sekaligus (Batch Update)
-            // Update level global
-            savedQuiz.value.level = batchLevel
+            // 4. Update State (Batch Update)
+            // UPDATE: Tidak perlu update savedQuiz.value.level
 
-            // Append (Menambahkan ke data yang sudah ada)
-            // savedQuiz.value.questions.push(...newQuestions)
-
-            // ATAU gunakan ini jika ingin REPLACE (Menimpa data lama):
+            // Replace data lama dengan data baru
             savedQuiz.value.questions = newQuestions
 
             return { success: true, message: 'Quiz berhasil disimpan ke Library!' }

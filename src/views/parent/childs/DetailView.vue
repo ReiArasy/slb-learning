@@ -123,14 +123,6 @@ const handleStatusFilter = (params) => {
                         <p>Kode Unik :</p>
                         <p class="value">{{ data?.child.code }}</p>
                     </span>
-                    <span class="level">
-                        <p>Level Anak </p>
-                        <div class="level-container">
-                            <div :class="['item', { active: data?.child?.level == 1 }]">1</div>
-                            <div :class="['item', { active: data?.child?.level == 2 }]">2</div>
-                            <div :class="['item', { active: data?.child?.level == 3 }]">3</div>
-                        </div>
-                    </span>
                 </div>
             </div>
             <div class="data-wrapper">
@@ -229,53 +221,6 @@ const handleStatusFilter = (params) => {
             font-weight: bold;
             color: var(--Secondary-900);
             font-family: 'Ubuntu Sans';
-        }
-
-        .level-container {
-            display: grid;
-            grid-template-columns: auto auto auto;
-            gap: 20px;
-
-            .item {
-                padding: 25px 20px;
-                border-radius: 10px;
-                font-size: 30px;
-                font-weight: bold;
-                font-family: 'Ubuntu Sans';
-                border: 2px solid;
-                text-align: center;
-                cursor: pointer; // Tambahkan cursor pointer
-
-                &:nth-child(1) {
-                    border-color: var(--Secondary-900);
-                    color: var(--Secondary-900);
-
-                    &.active {
-                        background-color: var(--Secondary-900);
-                        color: var(--White);
-                    }
-                }
-
-                &:nth-child(2) {
-                    border-color: var(--Ternary-500);
-                    color: var(--Ternary-500);
-
-                    &.active {
-                        background-color: var(--Ternary-500);
-                        color: var(--White);
-                    }
-                }
-
-                &:nth-child(3) {
-                    border-color: var(--Primary-900);
-                    color: var(--Primary-900);
-
-                    &.active {
-                        background-color: var(--Primary-900);
-                        color: var(--White);
-                    }
-                }
-            }
         }
 
         button {
@@ -500,11 +445,6 @@ const handleStatusFilter = (params) => {
 
             .score {
                 font-size: 28px; // Kecilkan font skor
-            }
-
-            .level-container .item {
-                padding: 15px 10px; // Kecilkan box level
-                font-size: 24px;
             }
         }
 

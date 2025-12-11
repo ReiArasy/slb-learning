@@ -2,10 +2,9 @@
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
 import { useGenerateQuizStore } from '@/stores/GenerateQuizStore';
-import { latestQuizStore } from '@/stores/LatestQuizStore';
 import api from '@/utils/api';
 import { triggerToast } from '@/utils/toast';
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const apiUrl = import.meta.env.VITE_APP_API_URL
@@ -19,49 +18,37 @@ const generateQuizStore = useGenerateQuizStore()
 const generatedQuestions = ref([]);
 const selectedIndices = ref([]);
 
-const levels = ref([1, 2, 3]);
-
+// Update Master Data Warna Badge
 const methodMasterData = {
     1: { label: 'Mendengar Audio', color: 'blue' },
     2: { label: 'Menulis Ulang', color: 'orange' },
     3: { label: 'Membaca', color: 'green' },
     4: { label: 'Mengurut Kata', color: 'purple' },
-    5: { label: 'Menebak Cepat', color: 'red' }
+    5: { label: 'Menebak Cepat', color: 'red' },
+    6: { label: 'Aritmatika', color: 'teal' } // <--- TAMBAHAN
 };
 
-const methodOfArray = ref([
-    { level: 1, data: [{ label: 'Mendengar Audio', value: 1 }, { label: 'Menulis Ulang', value: 2 }, { label: 'Membaca', value: 3 }] },
-    { level: 2, data: [{ label: 'Mendengar Audio', value: 1 }, { label: 'Menulis Ulang', value: 2 }, { label: 'Membaca', value: 3 }] },
-    { level: 3, data: [{ label: 'Mendengar Audio', value: 1 }, { label: 'Menulis Ulang', value: 2 }, { label: 'Membaca', value: 3 }, { label: 'Mengurut Kata', value: 4 }, { label: 'Menebak Cepat', value: 5 }] },
+// Daftar Metode Flat (Tanpa Level)
+const availableMethods = ref([
+    { label: 'Mendengar Audio', value: 1 },
+    { label: 'Menulis Ulang', value: 2 },
+    { label: 'Membaca', value: 3 },
+    { label: 'Mengurut Kata', value: 4 },
+    { label: 'Menebak Cepat', value: 5 },
+    { label: 'Aritmatika', value: 6 }, // <--- TAMBAHAN
 ]);
-
-const methodOptions = ref([]);
 
 const form = reactive({
     quantity: '',
-    level: '',
     method: '',
+    // Level dihapus dari form
 });
 
-onMounted(() => {
-    form.level = latestQuizStore.getLevel == null ? 1 : latestQuizStore.getLevel == 1 ? 2 : 3
-    
-    handleLevelChange()
-})
-
-// --- 2. LOGIC FORM ---
-const handleLevelChange = () => {
-    form.method = '';
-    const found = methodOfArray.value.find(d => d.level == form.level);
-    methodOptions.value = found ? found.data : [];
-    generatedQuestions.value = [];
-    selectedIndices.value = [];
-};
-
-// --- 3. LOGIC GENERATE ---
+// --- 2. LOGIC GENERATE ---
 const handleGenerate = async () => {
-    if (!form.quantity || !form.level) {
-        triggerToast("Mohon masukkan Jumlah dan pilih Level terlebih dahulu.", 'info');
+    // Validasi level dihapus
+    if (!form.quantity) {
+        triggerToast("Mohon masukkan Jumlah terlebih dahulu.", 'info');
         return;
     }
 
@@ -71,8 +58,8 @@ const handleGenerate = async () => {
 
     try {
         const response = await api.post('/exercise/generate', {
-            quantity: Number(form.quantity) + 10,
-            difficulty: form.level,
+            quantity: Number(form.quantity) + 5, // Request lebih sedikit untuk spare buffer
+            // difficulty: form.level, <--- DIHAPUS
             method: form.method,
             exerciseId: id
         });
@@ -80,7 +67,8 @@ const handleGenerate = async () => {
         const apiResponse = response.data;
 
         if (apiResponse.success && apiResponse.data?.questions) {
-            generatedQuestions.value = apiResponse.data.questions.filter(d => d.level == form.level).slice(0, form.quantity);
+            // Filter level dihapus, langsung ambil sesuai quantity
+            generatedQuestions.value = apiResponse.data.questions.slice(0, form.quantity);
 
             if (generatedQuestions.value.length === 0) {
                 triggerToast("Tidak ada soal yang berhasil digenerate.", 'info');
@@ -98,7 +86,7 @@ const handleGenerate = async () => {
     }
 };
 
-// --- 4. LOGIC SELECTION ---
+// --- 3. LOGIC SELECTION ---
 const isAllSelected = computed(() => {
     return generatedQuestions.value.length > 0 && selectedIndices.value.length === generatedQuestions.value.length;
 });
@@ -117,10 +105,8 @@ const handleSaveSelection = async () => {
         return;
     }
     const selectedData = selectedIndices.value.map(index => generatedQuestions.value[index]);
-    console.log("Soal yang dipilih untuk disimpan:", selectedData);
 
     const result = await generateQuizStore.saveGeneratedQuiz(selectedData)
-    console.log(result);
 
     if (result.success) {
         triggerToast('Berhasil menyimpan data')
@@ -161,21 +147,11 @@ const getMethodBadge = (methodId) => {
                     </div>
 
                     <div class="form-group">
-                        <label>Level</label>
-                        <div class="select-wrapper">
-                            <select v-model="form.level" @change="handleLevelChange" disabled>
-                                <option value="" disabled>Pilih Level</option>
-                                <option v-for="l in levels" :key="l" :value="l">Level {{ l }}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
                         <label>Metode Utama</label>
                         <div class="select-wrapper">
                             <select v-model="form.method">
                                 <option value="">Pilih Metode</option>
-                                <option v-for="m in methodOptions" :key="m.value" :value="m.value">{{ m.label }}
+                                <option v-for="m in availableMethods" :key="m.value" :value="m.value">{{ m.label }}
                                 </option>
                             </select>
                         </div>
@@ -213,7 +189,6 @@ const getMethodBadge = (methodId) => {
                                 <input type="checkbox" :value="index" v-model="selectedIndices" :id="`q-${index}`">
                             </div>
                             <div class="card-meta">
-                                <span class="badge level">Lvl {{ item.level }}</span>
                                 <span class="badge method" :class="getMethodBadge(item.method).color">
                                     {{ getMethodBadge(item.method).label }}
                                 </span>
@@ -222,11 +197,13 @@ const getMethodBadge = (methodId) => {
 
                         <label :for="`q-${index}`" class="card-content">
                             <img :src="`${apiUrl}/api/v1/image/exercise/${item.question.value}`" alt="Image"
-                                v-if="item.question.value.endsWith('.png')">
+                                v-if="item.question.value && item.question.value.toString().endsWith('.png')">
+
                             <div :style="{ 'background-color': item.question.value }" class="object-color"
-                                v-else-if="item.question.value.startsWith('#')"></div>
-                            <!-- PREVIEW WARNA DAN FIXING LEVEL KETIKA GENERATE -->
+                                v-else-if="item.question.value && item.question.value.toString().startsWith('#')"></div>
+
                             <h4 class="question-text" v-else>{{ item.question.value }}</h4>
+
                             <div class="card-footer">
                                 <span class="key-label">Kunci Jawaban:</span>
                                 <span class="key-value">{{ item.key }}</span>
@@ -239,7 +216,7 @@ const getMethodBadge = (methodId) => {
             <section v-else class="empty-state">
                 <div class="empty-icon">📝</div>
                 <h3>Belum ada soal</h3>
-                <p>Silakan masukkan jumlah, pilih Level & Metode, lalu klik Generate.</p>
+                <p>Silakan masukkan jumlah dan pilih Metode, lalu klik Generate.</p>
             </section>
         </main>
 
@@ -280,7 +257,7 @@ const getMethodBadge = (methodId) => {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-bottom: 100px; // Space for sticky bar
+    padding-bottom: 100px;
 }
 
 // --- Header ---
@@ -352,12 +329,17 @@ const getMethodBadge = (methodId) => {
 
     .input-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 2fr auto; // Quantity, Level, Method, Button
+        // Updated: Only 3 columns needed (Quantity, Method, Button)
+        grid-template-columns: 1fr 2fr auto;
         gap: 1.5rem;
         align-items: start;
 
-        @media (max-width: 992px) {
-            grid-template-columns: 1fr 1fr;
+        @media (max-width: 768px) {
+            grid-template-columns: 1fr 1fr; // Quantity, Method
+
+            .btn-container {
+                grid-column: 1 / -1; // Button full width below
+            }
         }
 
         @media (max-width: 576px) {
@@ -376,12 +358,11 @@ const getMethodBadge = (methodId) => {
             color: var(--Neutral-700);
         }
 
-        // Styling Inputs & Selects
         input,
         select {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid var(--Neutral-400); // Border lebih terlihat
+            border: 1px solid var(--Neutral-400);
             border-radius: var(--Radius-sm);
             font-size: 0.95rem;
             font-family: inherit;
@@ -400,13 +381,8 @@ const getMethodBadge = (methodId) => {
             }
         }
 
-        // Fix alignment for button
         &.btn-container {
             align-self: end;
-
-            .full-height-btn {
-                height: 48px; // Match input height generally
-            }
         }
     }
 }
@@ -460,7 +436,6 @@ const getMethodBadge = (methodId) => {
 // --- Questions List & Cards ---
 .questions-list {
     display: grid;
-    // Responsive Grid: Min width 350px, auto fill
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1.5rem;
 }
@@ -483,12 +458,10 @@ const getMethodBadge = (methodId) => {
         border-color: var(--Secondary-900);
     }
 
-    // Selected State
     &.is-selected {
         background-color: var(--Secondary-100);
         border-color: var(--Secondary-900);
 
-        // Accent line on left
         &::before {
             content: '';
             position: absolute;
@@ -548,11 +521,6 @@ const getMethodBadge = (methodId) => {
             text-transform: uppercase;
             letter-spacing: 0.5px;
 
-            &.level {
-                background: var(--Neutral-200);
-                color: var(--Neutral-700);
-            }
-
             &.method {
                 &.blue {
                     background: #DBEAFE;
@@ -578,6 +546,13 @@ const getMethodBadge = (methodId) => {
                     background: #FEE2E2;
                     color: #991B1B;
                 }
+
+                &.teal {
+                    background: #CCFBF1;
+                    color: #0F766E;
+                }
+
+                // Warna Baru Aritmatika
             }
         }
     }
@@ -611,14 +586,33 @@ const getMethodBadge = (methodId) => {
     }
 }
 
+// --- Empty State ---
+.empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--Neutral-400);
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    h3 {
+        color: var(--Neutral-700);
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
 // --- Sticky Bottom Bar ---
 .bottom-action-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.9); // Semi transparent
-    backdrop-filter: blur(10px); // Blur effect
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
     border-top: 1px solid var(--Neutral-100);
     padding: 1rem 2rem;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);

@@ -8,29 +8,31 @@ import { formatDate } from '@/helpers/formatDate';
 const search = ref()
 
 const baseUrl = import.meta.env.VITE_APP_API_URL
-const props = defineProps(['method', 'methodLabel', 'level', 'questionType', 'insertQuestion', 'handleQuestionBank'])
+// LEVEL DIHAPUS DARI PROPS
+const props = defineProps(['method', 'methodLabel', 'questionType', 'insertQuestion', 'handleQuestionBank'])
 const questionBank = ref([])
 
 onMounted(async () => {
-    await api.get(`/questions?level=${props.level}&method=${props.method}`)
+    // LEVEL DIHAPUS DARI QUERY PARAMS API
+    await api.get(`/questions?method=${props.method}`)
         .then(res => {
             questionBank.value = []
             questionBank.value = res.data.data
+
+            // Filter khusus untuk Method 5 (Tebak Cepat)
             if (props.method == 5 && props.questionType == 1) {
+                // Tipe Hex (Warna)
                 questionBank.value = res.data.data.filter(d => d.question.type == 'hex')
             } else if (props.method == 5 && props.questionType == 2) {
+                // Tipe Path (Gambar Objek)
                 questionBank.value = res.data.data.filter(d => d.question.type == 'path')
             }
 
-            console.log(props.questionType);
+            // Untuk Method 6 (Aritmatika) dan lainnya, akan mengambil semua data sesuai method tanpa filter type tambahan
 
         }).catch(e => {
             console.log(e);
         })
-})
-
-watch(() => props => () => {
-    console.log(props);
 })
 </script>
 
@@ -47,7 +49,13 @@ watch(() => props => () => {
                         <div class="question-header">
                             <img :src="`${baseUrl}/api/v1/${item?.question?.value}`" alt="Pertanyaan"
                                 v-if="item?.question?.type == 'path'">
+
+                            <div v-else-if="item?.question?.type == 'hex'"
+                                :style="`width: 100%; height: 100px; background-color: ${item?.question?.value}; border-radius: 10px; border: 1px solid #ccc;`">
+                            </div>
+
                             <h2 class="question" v-else>{{ item?.question?.value }}</h2>
+
                             <p class="date">{{ formatDate(item?.createdAt) }}</p>
                         </div>
                         <div class="question-body">
@@ -146,6 +154,12 @@ watch(() => props => () => {
                     justify-content: space-between;
                     align-items: start;
                     margin-bottom: 10px;
+                    gap: 10px; // Tambahan agar teks dan tanggal tidak nempel
+
+                    .question {
+                        font-size: 1.2rem;
+                        font-weight: bold;
+                    }
                 }
 
                 .question-body {
@@ -174,6 +188,24 @@ watch(() => props => () => {
                 }
             }
         }
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .modal-container .modal .modal-body .questions-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-container .modal .modal-body .questions-container {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-container .modal {
+        padding: 30px 20px;
+        width: 95vw;
     }
 }
 </style>

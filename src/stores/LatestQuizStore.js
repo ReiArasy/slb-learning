@@ -21,9 +21,4 @@ export const latestQuizStore = reactive({
         
         this.data = JSON.parse(sessionStorage.getItem('latestQuiz'))
     },
-
-    get getLevel() {
-        this.loadData()
-        return this.data?.level
-    },
 })

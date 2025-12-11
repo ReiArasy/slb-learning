@@ -45,7 +45,6 @@ export const useMaterialStore = defineStore('material', () => {
     const formatDataByMethod = (input) => {
         let payload = {
             childrenId: input.childrenId,
-            level: input.level,
             method: input.method_id, // ID Metode untuk backend
             title: input.title,
             description: input.description,
