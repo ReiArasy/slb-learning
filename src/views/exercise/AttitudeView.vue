@@ -45,7 +45,7 @@ const submit = async () => {
         point: point.value
     }).then(res => {
         console.log(res);
-        router.push({ name: 'exercise.quiz.summary', params: { id: id, quizId: quizId } })
+        router.push({ name: 'exercise.quiz.overview', params: { id: id, quizId: quizId } })
     }).catch(err => {
         console.log(err);
     })
@@ -65,152 +65,97 @@ const handleCancelAction = () => {
     isConfirmOpen.value = false; // Tutup modal
 };
 // END Confirmation Modal Handlers
-</script> 
+
+
+</script>
 
 <template>
-    <div class="attitude-container">
-
-        <div class="header-row">
-            <router-link :to="{ name: 'exercise.quiz.summary', params: { id, quizId } }" class="back-icon">
+    <div class="container">
+        <div class="page-header">
+            <router-link :to="{ name: 'exercise.quiz.summary', params: { id: id, quizId: quizId } }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="title">Penilaian Perilaku</h1>
+            <h1 class="page-title">Penilaian Perilaku</h1>
         </div>
-
-        
-        <div class="child-info">
-            <div>
-                <h2 class="child-name">{{ data?.child?.fullName }}</h2>
-                <p class="child-date">Catatan Perilaku - {{ data?.exercise?.createdAt?.slice(0,10) }}</p>
+        <div class="page-body">
+            <ConfirmComponent v-if="isConfirmOpen" title="Simpan penilaian?"
+                message="Apakah Anda yakin untuk menyimpan penilaian?" confirmText="Simpan" cancelText="Batal"
+                @confirm="handleConfirmAction" @cancel="handleCancelAction" />
+            <div class="identity">
+                <h1>{{ data?.child?.fullName }}</h1>
+                <p>#{{ data?.child?.code }}</p>
             </div>
-            <p class="child-code">#{{ data?.child?.code }}</p>
-        </div>
-
-        
-        <ConfirmComponent
-            v-if="isConfirmOpen"
-            title="Simpan penilaian?"
-            message="Apakah Anda yakin ingin menyimpan penilaian?"
-            confirmText="Simpan"
-            cancelText="Batal"
-            @confirm="handleConfirmAction"
-            @cancel="handleCancelAction"
-        />
-
-        <div class="section">
-            <label>Catatan Penilaian Perilaku <span class="req">*</span></label>
-            <WysiwygEditorComponent v-model="note" class="wysiwyg-wrap" />
-        </div>
-
-        <InputComponent
-            type="number"
-            label="Penilaian Perilaku"
-            placeholder="Contoh: 80"
-            id="point"
-            v-model="point"
-            :isInvalid="errors?.point ?? false"
-            :invalidMsg="errors?.point ?? ''"
-            :required="true"
-        />
-
-        <div class="btn-area">
+            <div class="input-wrapper">
+                <label for="editor">Catatan Penilaian Perilaku <span class="req">*</span></label>
+                <WysiwygEditorComponent v-model="note" class="textarea" />
+            </div>
+            <InputComponent type="number" label="Penilaian Perilaku" placeholder="Contoh: 80" id="point" v-model="point"
+                :isInvalid="errors?.point ?? false" :invalidMsg="errors?.point ?? ''" :required="true" />
             <ButtonComponent label="Simpan" class="secondary" @click="showConfirmation" />
         </div>
     </div>
 </template>
 
-<style scoped lang="scss">
-
-.attitude-container {
-    padding: 25px 40px;
-    font-family: 'Inter', sans-serif;
-}
-
-.section {
-    margin-bottom: 4em; // bebas mau dibesarkan
-}
-
-/* ---- HEADER ---- */
-.header-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 25px;
-
-    .title {
-        font-size: 22px;
-        font-weight: 700;
-        color: #008BD8;
-    }
-
-    .back-icon svg {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-}
-
-/* ---- CHILD INFO ---- */
-.child-info {
+<style lang="scss" scoped>
+.identity {
+    color: var(--Secondary-900);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 35px;
+    margin-bottom: 30px;
 
-    .child-name {
-        color: #008BD8;
-        font-size: 28px;
-        font-weight: 700;
-    }
-
-    .child-date {
-        color: #7c7c7c;
-        margin-top: 4px;
-    }
-
-    .child-code {
-        color: #008BD8;
-        font-size: 18px;
+    p {
+        font-size: 25px;
         font-weight: 600;
+        font-family: 'Ubuntu Sans', sans-serif;
     }
 }
 
-/* ---- INPUT BLOCK ---- */
-.input-block {
+.input-wrapper {
+    margin-bottom: 80px;
 
+    // Style labelnya sekalian
     label {
-        font-size: 16px;
+        display: block;
         font-weight: 500;
+        font-size: medium;
     }
 
-    .req {
+    .textarea {
+        margin-top: 15px;
+    }
+
+    span.req {
         color: red;
     }
 }
 
-/* ---- BUTTON AREA ---- */
-.btn-area {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 40px;
+/* --- RESPONSIVE --- */
 
-    .primary-btn {
-        width: 150px;
+/* Target Tablet (dan di bawahnya) */
+@media (max-width: 768px) {
+    .identity {
+        flex-direction: column; // <-- Pecah jadi vertikal
+        align-items: flex-start; // <-- Ratakan kiri
+        gap: 5px; // <-- Beri jarak
+        margin-bottom: 25px;
+
+        p {
+            font-size: 20px; // Kecilkan font
+        }
+    }
+
+    .input-wrapper {
+        margin-bottom: 40px; // Kurangi margin
     }
 }
 
-/* ---- Responsive ---- */
-@media(max-width: 768px) {
-    .child-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+/* Target Ponsel Kecil */
+@media (max-width: 576px) {
+    .identity {
+        p {
+            font-size: 18px;
+        }
     }
-
-    .section {
-    margin-bottom: 7rem; // responsive input text
-}
-
 }
 </style>
-

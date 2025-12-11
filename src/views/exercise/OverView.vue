@@ -17,6 +17,7 @@ const isWorkMode = workStore.isWorkMode
 const id = route.params.id
 const quizId = route.params.quizId
 const data = ref([])
+const isLoading = ref(false)
 
 onMounted(async () => {
     getData()
@@ -25,24 +26,16 @@ onMounted(async () => {
 const getData = async () => {
     await api.get(`/exercise/${id}/quiz/${quizId}`)
         .then((res) => {
+            isLoading.value = true
             data.value = res.data.data
 
             console.log(data.value.answers.length);
-            
+
         })
         .catch((err) => {
             console.log(err);
-        })
-
-}
-
-const visibility = async () => {
-    await api.post(`exercise/${id}/quiz/${quizId}/visibility`)
-        .then(res => {
-            getData()
-        })
-        .catch(e => {
-            console.log(e);
+        }).finally(() => {
+            isLoading.value = false
         })
 }
 </script>
@@ -53,94 +46,56 @@ const visibility = async () => {
             <router-link :to="{ name: 'exercise.quiz.list', params: { id: id } }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Konfirmasi Mengerjakan Latihan</h1>
+            <h1 class="page-title">Mengerjakan Latihan</h1>
         </div>
-
         <div class="page-body">
             <div class="card">
-                
-                <!-- HEADER -->
-                <div class="card-header">
-                    <h3>{{ data?.name }}</h3>
+                <div v-if="isLoading" class="loading-state">
+                    <div class="spinner" style="border-top-color: var(--Secondary-900);"></div>
+                    <p>Sedang mengambil data...</p>
                 </div>
-
-                <!-- BODY -->
-                <div class="card-body">
-
-                    <!-- Deskripsi -->
-                    <div class="description">
-                        <div v-html="data?.description"></div>
+                <span v-else>
+                    <div class="card-header">
+                        <h3>{{ data?.name }}</h3>
                     </div>
-
-                    <!-- Data Detail -->
-                    <div class="data">
-                        <div class="date">
-                            Tanggal Ditambahkan : <span>{{ formatDate(data?.date) }}</span>
+                    <div class="card-body">
+                        <div class="description">
+                            <div v-html="data?.description"></div>
                         </div>
-
-                        <div class="questionTotal">
-                            Jumlah Soal : <span>{{ data?.questions?.length }}</span>
+                        <div class="data">
+                            <div class="date">Tanggal Ditambahkan : <span>{{ formatDate(data?.date) }}</span></div>
+                            <div class="questionTotal">Jumlah Soal : <span>{{ data?.questions?.length }}</span></div>
+                            <div class="point">Poin Lolos : <span>60</span></div>
                         </div>
-
-                       <div class="tipelatihan">
-                            <span class="label">Tipe Latihan :</span>
-                            <span class="value type-badge-inline">
-                                {{ data?.method ?? 'Membaca' }}
-                            </span>
-                        </div>  
+                        <div class="action">
+                            <ButtonComponent label="Mulai Mengerjakan" class="secondary"
+                                @click="router.push({ name: 'exercise.quiz.work', params: { id: id, quizId: quizId } })"
+                                v-if="authStore?.user?.role == 1" />
+                            <ButtonComponent
+                                :label="authStore?.user?.role == 1 ? 'Review pengerjaan sebelumnya' : 'Review pengerjaan'"
+                                class="primary" display="border"
+                                @click="router.push({ name: 'exercise.quiz.review', params: { id: id, quizId: quizId } })"
+                                v-if="data?.answers?.length > 0" />
+                            <ButtonComponent label="Penilaian Perilaku" class="secondary" display="border"
+                                @click="router.push({ name: 'exercise.attitude', params: { id: id, quizId: quizId } })" />
+                        </div>
                     </div>
-
-                    <!-- ACTIONS -->
-                    <div class="action">
-
-                        <!-- BUTTON UTAMA -->
-                        <ButtonComponent 
-                            label="Mulai Mengerjakan" 
-                            class="secondary"
-                            @click="router.push({ 
-                                name: 'exercise.quiz.work', 
-                                params: { id: id, quizId: quizId } 
-                            })"
-                        />
-
-                        <!-- BUTTON BORDER (Laporan Perilaku) -->
-                        <ButtonComponent 
-                            label="Laporan Perilaku"
-                            class="secondary"
-                            display="border"
-                            @click="router.push({
-                                name: 'exercise.behavior',
-                                params: { id: id, quizId: quizId }
-                            })"
-                            style="margin-top: 12px"
-                        />
-                    </div>
-
-                    <!-- HISTORY DIHAPUS -->
-
-                </div>
+                </span>
             </div>
         </div>
     </div>
-</template>
-
+</template>3
 
 <style lang="scss" scoped>
 .page-header {
-    align-items: center;
-    gap: 10px; // jarak antara icon & title
-
     h1 {
         color: var(--Secondary-900) !important;
-        font-size: 25px;
     }
 
-    svg {
-        width: 30px !important;   
-        height: 30px !important;
+    svg path {
+        fill: var(--Secondary-900) !important;
     }
 }
-
 
 .page-body {
     h3 {
@@ -154,71 +109,13 @@ const visibility = async () => {
         border-radius: 10px;
         background-color: var(--White);
         box-shadow: 0 5.192px 31.153px 0 rgba(0, 0, 0, 0.25);
+
         .card-header {
             display: grid;
-            grid-template-columns: 1fr auto; // Diubah dari 80%
+            grid-template-columns: 1fr auto; // <-- Diubah dari 80%
             align-items: center;
             margin-bottom: 40px;
-            gap: 30px; // gap
-
-            &::after {
-                content: "";
-                grid-column: 1 / -1;   // garis full 2 kolom
-                display: block;
-                width: 100%;           // setting panjang garis
-                height: 2px;           // setting ketebalan garis
-                background: var(--Secondary-900);
-                margin-top: 10px;      // jarak dari header
-                border-radius: 10px;
-            }
-
-            .level-container {
-                display: grid;
-                grid-template-columns: auto auto auto;
-                gap: 20px;
-                justify-content: end; // <-- Pastikan rata kanan
-
-                .item {
-                    padding: 25px 20px;
-                    border-radius: 10px;
-                    font-size: 30px;
-                    font-weight: bold;
-                    font-family: 'Ubuntu Sans';
-                    border: 2px solid;
-                    text-align: center;
-                    cursor: default; // Tidak perlu diklik di halaman ini
-
-                    &:nth-child(1) {
-                        border-color: var(--Secondary-900);
-                        color: var(--Secondary-900);
-
-                        &.active {
-                            background-color: var(--Secondary-900);
-                            color: var(--White);
-                        }
-                    }
-
-                    &:nth-child(2) {
-                        border-color: var(--Ternary-500);
-                        color: var(--Ternary-500);
-
-                        &.active {
-                            background-color: var(--Ternary-500);
-                            color: var(--White);
-                        }
-                    }
-
-                    &:nth-child(3) {
-                        border-color: var(--Primary-900);
-                        color: var(--Primary-900);
-
-                        &.active {
-                            background-color: var(--Primary-900);
-                            color: var(--White);
-                        }
-                    }
-                }
-            }
+            gap: 30px; // <-- Tambahkan gap
         }
 
         .card-body {
@@ -251,20 +148,12 @@ const visibility = async () => {
 
                 .date,
                 .questionTotal,
-                .point,
-                .tipelatihan {
+                .point {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     width: 100%;
                     margin-bottom: 10px; // <-- Tambah jarak
-                }
-
-                .type-badge-inline {
-                    background: var(--Info-50, #e9f5ff);
-                    padding: 4px 14px;
-                    border-radius: 10px;
-                    font-size: 16px;
                 }
             }
 
@@ -297,12 +186,9 @@ const visibility = async () => {
 
             .action {
                 justify-items: start;
-                grid-column: 1 / -1;
-                width: 100%;
 
                 button {
                     margin-bottom: 15px;
-                    width: 100%;
                 }
             }
         }
@@ -321,10 +207,6 @@ const visibility = async () => {
             grid-template-columns: 1fr; // <-- Pecah header jadi 1 kolom
             gap: 25px;
             justify-items: start; // Ratakan kiri
-
-            .level-container {
-                justify-content: start; // Ratakan kiri
-            }
         }
 
         .card-body {
@@ -336,22 +218,6 @@ const visibility = async () => {
 
 /* Target Ponsel */
 @media (max-width: 576px) {
-    .page-header {
-        display: flex;
-        align-items: center;
-        gap: 10px; // jarak antara icon & title
-        margin-bottom: 15px;
-
-        svg { //setting ukuran svg
-            width: 19px !important;   
-            height: 19px !important;
-        }
-
-        .page-title { //setting ukuran judul 
-            font-size: 17.5px !important; 
-        }
-    }
-    
     .page-body {
         h3 {
             font-size: 24px; // Kecilkan font
@@ -359,15 +225,6 @@ const visibility = async () => {
 
         .card {
             padding: 1.5rem; // Padding super kecil
-
-            .card-header .level-container {
-                gap: 10px; // Kurangi gap
-
-                .item {
-                    padding: 15px 10px; // Kecilkan box
-                    font-size: 22px; // Kecilkan font
-                }
-            }
 
             .card-body {
                 gap: 40px; // Beri jarak lebih antar section

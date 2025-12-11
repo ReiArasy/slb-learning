@@ -12,10 +12,12 @@ import { useRouter } from 'vue-router';
 const api = import.meta.env.VITE_APP_API_URL
 const router = useRouter()
 const fullName = ref('')
+const username = ref('')
 const email = ref('')
 const phone = ref('')
 const password = ref('')
 const role = ref(null)
+const isLoading = ref(false)
 
 // Alerts
 const showAlert = ref(false);
@@ -35,8 +37,10 @@ function selectRole(params) {
 const errors = ref([])
 async function submit() {
     errors.value = null
+    isLoading.value = true
     await axios.post(`${api}/api/v1/auth/register`, {
         fullName: fullName.value,
+        username: username.value,
         email: email.value,
         phone: phone.value,
         password: password.value,
@@ -48,6 +52,8 @@ async function submit() {
             router.push({ name: 'dashboard' })
         }).catch((e) => {
             if (e.status === 422) errors.value = e.response.data.errors
+        }).finally(() => {
+            isLoading.value = false
         })
 }
 </script>
@@ -61,25 +67,14 @@ async function submit() {
         <div class="section-body">
             <div class="card">
                 <div class="card-body">
-                    <div class="item">
-                        <h4 class="role">Saya Adalah :</h4>
-                        <p class="invalid-msg" v-if="errors?.role">{{ errors?.role }} :</p>
-                        <div class="teacher" :class="[{ 'active': role === 1 }, { 'invalid': errors?.role ?? false }]"
-                            @click="selectRole(1)">
-                            <img :src="teacher" alt="As a Teacher">
-                            <h4>Guru</h4>
-                        </div>
-                        <div class="parent" :class="[{ 'active': role === 2 }, { 'invalid': errors?.role ?? false }]"
-                            @click="selectRole(2)">
-                            <img :src="parent" alt="As a Parent">
-                            <h4>Orang Tua</h4>
-                        </div>
-                    </div>
                     <div class="item forms">
                         <form @submit.prevent="submit">
                             <input-component type="text" label="Nama Lengkap" placeholder="Contoh: Sri Mulyani"
                                 id="fullName" v-model="fullName" :isInvalid="errors?.fullName ?? false"
                                 :invalidMsg="errors?.fullName ?? ''" />
+                            <input-component type="username" label="Username" placeholder="Contoh: srimulyani"
+                                id="username" v-model="username" :isInvalid="errors?.username ?? false"
+                                :invalidMsg="errors?.username ?? ''" />
                             <input-component type="email" label="Email" placeholder="Contoh: example@mail.com"
                                 id="email" v-model="email" :isInvalid="errors?.email ?? false"
                                 :invalidMsg="errors?.email ?? ''" />
@@ -89,8 +84,8 @@ async function submit() {
                             <input-component type="password" label="Password" placeholder="● ● ● ● ● ●" id="password"
                                 v-model="password" :isInvalid="errors?.password ?? false"
                                 :invalidMsg="errors?.password ?? ''" />
-                            <button-component label="Buat Akun" type="submit" display="fill" size="full"
-                                @click="submit" />
+                            <button-component :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Buat Akun'"
+                                type="submit" display="fill" size="full" @click="submit" />
                             <button-component label="Masuk" type="button" display="border" size="full"
                                 @click="router.push({ name: 'login' })" />
                         </form>
@@ -122,8 +117,6 @@ section {
 }
 
 .card-body {
-    display: grid;
-    grid-template-columns: 30% auto;
     align-items: center;
     gap: 30px;
     // background: black;

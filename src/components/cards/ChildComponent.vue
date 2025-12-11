@@ -4,8 +4,9 @@ import child from '@/assets/images/child.png'
 import CopyIcon from '@/components/shape/CopyIcon.vue';
 import { useRouter } from 'vue-router';
 import { workStore } from '@/stores/WorkStore';
+import { authStore } from '@/stores/AuthStore';
 
-const props = defineProps(['id', 'level', 'name', 'code', 'parentName', 'method'])
+const props = defineProps(['id', 'level', 'name', 'code', 'parentName', 'teacherName', 'method'])
 const router = useRouter()
 
 const handleWorkMode = (params) => {
@@ -24,20 +25,22 @@ const handleWorkMode = (params) => {
     <div class="card">
         <div class="card-header">
             <img :src="child" alt="Child">
-            <!-- <div class="level" v-if="props.level">
+            <div class="level" v-if="props.level">
                 {{ props.level }}
-            </div> -->
+            </div>
         </div>
         <div class="card-body">
             <p class="name">{{ props.name }}</p>
-            <p class="ketunaan" v-if="props.parentName">{{ props.ketunaan ?? 'Tunagrahita' }}</p>
+            <p class="parent" v-if="props.parentName && authStore.user.role == 1">{{ props.parentName }}</p>
+            <p class="parent" v-else-if="props.teacherName && authStore.user.role == 2">{{ props.teacherName }}</p>
             <div class="code">
                 <CopyIcon /> {{ props.code }}
             </div>
         </div>
         <div class="card-footer">
             <button-component label="Detail" size="full" @click="handleWorkMode('detail')" />
-            <!-- <button-component label="Kerjakan Tugas" size="full" @click="handleWorkMode('work')" /> -->
+            <button-component label="Kerjakan Tugas" size="full" @click="handleWorkMode('work')"
+                v-if="authStore.user.role == 1" />
             <button-component label="Hapus" display="border" size="full" @click="props.method(props.id)" />
         </div>
     </div>
@@ -77,11 +80,6 @@ const handleWorkMode = (params) => {
     .name {
         font-size: 25px;
         font-weight: bold;
-    }
-
-    .ketunaan {
-        font-size: 15px;
-        font-weight: 300;
     }
 
     .code {

@@ -2,6 +2,8 @@
 import { useRoute } from 'vue-router';
 import sidebar from './Sidebar.vue'
 import { onBeforeMount, onMounted, provide, ref } from 'vue';
+import ToastComponent from '@/components/toast/ToastComponent.vue';
+import { globalToast } from '@/utils/toast';
 
 const route = useRoute()
 
@@ -11,16 +13,28 @@ const routeWithoutSidebar = [
     'childs.detail',
     'childs.work',
     'exercise.create',
+    'exercise.edit',
+    'exercise.quiz.method',
     'exercise.quiz.create',
+    'exercise.quiz.generate',
+    'exercise.quiz.edit',
+    'exercise.quiz.detail',
     'exercise.quiz.overview',
     'exercise.quiz.list',
     'exercise.quiz.work',
     'exercise.quiz.summary',
     'exercise.quiz.review',
     'exercise.attitude',
+    'material.createMethod',
+    'material.generate',
     'material.create',
     'material.edit',
-    'material.overview'
+    'material.overview',
+]
+
+const routeChatBot = [
+    'material.generate',
+    'exercise.quiz.generate'
 ]
 
 // loader
@@ -36,7 +50,8 @@ onMounted(() => {
 </script>
 
 <template>
-    <div id="layout" :class="[{ nosidebar: routeWithoutSidebar.includes(route.name) }]">
+    <div id="layout"
+        :class="[{ nosidebar: routeWithoutSidebar.includes(route.name), chatbot: routeChatBot.includes(route.name) }]">
         <sidebar v-if="!routeWithoutSidebar.includes(route.name)" />
         <div id="loader" v-if="isShowLoader">
             <div class="dots-container">
@@ -46,6 +61,8 @@ onMounted(() => {
             </div>
         </div>
         <div id="content">
+            <ToastComponent v-if="globalToast.show" :message="globalToast.message" :type="globalToast.type"
+                :title="globalToast.title" @close="globalToast.show = 'false'" />
             <router-view />
         </div>
     </div>
@@ -66,6 +83,13 @@ onMounted(() => {
     #content {
         padding: 30px;
     }
+
+    &.chatbot {
+        #content {
+            padding: 0 !important;
+        }
+    }
+
 
     #loader {
         padding: 2rem;

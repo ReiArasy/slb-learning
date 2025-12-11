@@ -3,16 +3,16 @@ import child from '@/assets/images/child.png'
 import ButtonComponent from '@/components/buttons/ButtonComponent.vue';
 import ConfirmComponent from '@/components/confirm/ConfirmComponent.vue';
 import FilterModal from '@/components/modal/FilterModal.vue';
+import InformationModal from '@/components/modal/InformationModal.vue';
 import ChevronLeftIcon from '@/components/shape/ChevronLeft.Icon.vue';
 import FilterIcon from '@/components/shape/FilterIcon.vue';
+import InfoIcon from '@/components/shape/InfoIcon.vue';
 import { formatDate } from '@/helpers/formatDate';
+import { authStore } from '@/stores/AuthStore';
 import { workStore } from '@/stores/WorkStore';
 import api from '@/utils/api';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
-const isFilterExerciseShowed = ref(false)
-const isFilterMaterialShowed = ref(false)
 
 const route = useRoute()
 const router = useRouter()
@@ -22,16 +22,42 @@ const points = ref(0)
 const dataContainer = ref(null)
 const activeSlide = ref(0)
 const isWorkMode = workStore.isWorkMode
+const isShowModal = ref(false)
+const isLoading = ref(false)
 
 onMounted(async () => {
     await api(`/childs/${id}`)
         .then((res) => {
-            console.log(res);
             data.value = res.data.data
+
+            data.value.exercises.forEach(d => {
+                d.exercisePoint = 0
+
+                d.quiz.forEach(q => {
+                    d.exercisePoint += parseInt(q.quizPoint) || 0
+                })
+
+                d.exercisePoint = Math.round(d.exercisePoint / d.quiz.length) || 0
+
+                points.value += parseInt(d.exercisePoint)
+
+            })
+            points.value = Math.round(points.value / data.value.exercises.length) || 0
+
+            // calculate showed material
+            if (workStore.isWorkMode || authStore.user.role == 2)
+                filterShowedMaterial()
+
         }).catch((err) => {
             console.log(err);
+        }).finally(() => {
+            isLoading.value = false
         })
 })
+
+const filterShowedMaterial = () => {
+    data.value.materials = data.value.materials.filter(d => d.isHidden == false)
+}
 
 /**
  * Fungsi untuk melakukan scrolling ke slide yang dipilih
@@ -71,104 +97,56 @@ const handleScroll = () => {
     activeSlide.value = slideIndex;
 };
 
-
-const handleFilterModal = (params) => {
-    if (params == 'exercise') {
-        isFilterExerciseShowed.value = !isFilterExerciseShowed.value
-        isFilterMaterialShowed.value = false
-    } else {
-        isFilterExerciseShowed.value = false
-        isFilterMaterialShowed.value = !isFilterMaterialShowed.value
-    }
-}
-
-const handleDateFilter = (params) => {
-    console.log(params);
-
-    // olah data berdasarkan filter
-}
-
-const handleStatusFilter = (params) => {
-    console.log(params);
-
-    // olah data berdasarkan filter
+const handleModal = () => {
+    isShowModal.value = !isShowModal.value
 }
 </script>
 
 <template>
+    <InformationModal v-if="isShowModal" :handleModal="handleModal" />
     <div class="container">
         <div class="page-header">
             <router-link :to="{ name: 'childs.index' }">
                 <ChevronLeftIcon />
             </router-link>
-            <h1 class="page-title">Data Anak Didik</h1>
+            <h1 class="page-title">Data Anak Didik Guru</h1>
         </div>
         <div class="page-body">
             <div class="detail">
                 <img :src="child" alt="Child">
                 <div class="biodata">
-    
-                    <!-- nama anak -->
-                    <h2 class="child-name">
-                        {{ data?.child.fullName }}
-                    </h2>
-
-                    <!-- total nilai -->
-                    <div class="total-score">
-                        Total Nilai:
-                        <span class="score-value">{{ points }}</span>
-                    </div>
-
-                    <!-- detail list -->
-                    <div class="detail-list">
-                        <div class="row">
-                            <span class="label">Tanggal Lahir:</span>
-                            <span class="value">{{ formatDate(data?.child.createdAt) }}</span>
-                        </div>
-
-                        <div class="row">
-                            <span class="label">Ketunaan:</span>
-                            <span class="value">{{ data?.child.ketunaan ?? '-' }}</span>
-                        </div>
-
-                        <div class="row">
-                            <span class="label">Nama Wali:</span>
-                            <span class="value">{{ data?.parent.fullName }}</span>
-                        </div>
-
-                        <div class="row">
-                            <span class="label">Kode Unik:</span>
-                            <span class="value code">
-                                <i class="bx bx-copy"></i>
-                                #{{ data?.child.code }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- edit button -->
-                    <ButtonComponent 
-                        label="Edit Data Anak" 
-                        class="secondary" 
-                        display="border"
-                        size="large"
-                    />
+                    <span class="score">
+                        <p>Total Skor :</p>
+                        <p class="value">{{ points }}</p>
+                    </span>
+                    <span class="name">
+                        <p>Nama Anak :</p>
+                        <p class="value">{{ data?.child.fullName }}</p>
+                    </span>
+                    <span class="name">
+                        <p>Nama Orang Tua :</p>
+                        <p class="value">{{ data?.child.parent.fullName }}</p>
+                    </span>
                 </div>
+                <ButtonComponent v-if="!isWorkMode" label="Edit Data Anak" class="secondary" display="border"
+                    size="large" @click="router.push({ name: 'childs.edit', params: { id: id } })" />
             </div>
             <div class="data-wrapper">
                 <div class="data-swiper" ref="dataContainer" @scroll="handleScroll">
 
                     <div class="swiper-slide-manual">
                         <div class="card exercises">
-                            <FilterModal :handleModal="handleFilterModal" :handleDateFilter="handleDateFilter"
-                                :handleStatusFilter="handleStatusFilter" type="exercise"
-                                v-if="isFilterExerciseShowed" />
                             <div class="card-header">
                                 <h3>Latihan</h3>
-                                <FilterIcon class="filterIcon" @click="handleFilterModal('exercise')" />
                             </div>
                             <div class="card-body">
+                                <div v-if="isLoading" class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Sedang mengambil data...</p>
+                                </div>
                                 <div class="item" v-for="(item, index) in data?.exercises" :key="index"
-                                    @click="$router.push({ name: 'exercise.quiz.list', params: { id: item._id } })">
+                                    @click="router.push({ name: 'exercise.quiz.list', params: { id: item._id } })"
+                                    v-else>
                                     <div class="point">{{ item?.exercisePoint ?? 0 }}</div>
                                     <div class="identity">
                                         <p class="title">{{ item.name }}</p>
@@ -178,30 +156,31 @@ const handleStatusFilter = (params) => {
                             </div>
                             <div class="card-footer" v-if="!isWorkMode">
                                 <ButtonComponent label="Buat Latihan" class="secondary" size="large"
-                                    @click="$router.push({ name: 'exercise.create', params: id })" />
+                                    @click="router.push({ name: 'exercise.create', params: id })" />
                             </div>
                         </div>
                     </div>
 
                     <div class="swiper-slide-manual">
                         <div class="card materials">
-                            <FilterModal :handleModal="handleFilterModal" :handleDateFilter="handleDateFilter"
-                                :handleStatusFilter="handleStatusFilter" type="material"
-                                v-if="isFilterMaterialShowed" />
                             <div class="card-header">
                                 <h3>Materi</h3>
-                                <FilterIcon class="filterIcon" @click="handleFilterModal('material')" />
                             </div>
                             <div class="card-body">
+                                <div v-if="isLoading" class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Sedang mengambil data...</p>
+                                </div>
                                 <div class="item" v-for="(item, index) in data?.materials" :key="index"
-                                    @click="router.push({ name: 'material.overview', params: { id: id, materialId: item._id } })">
+                                    @click="router.push({ name: 'material.overview', params: { id: id, materialId: item._id } })"
+                                    v-else>
                                     <p class="title">{{ item.title }}</p>
                                     <div class="category">{{ item.method }}</div>
                                 </div>
                             </div>
                             <div class="card-footer" v-if="!isWorkMode">
                                 <ButtonComponent label="Buat Materi" class="primary" size="large"
-                                    @click="$router.push({ name: 'material.create', params: id })" />
+                                    @click="$router.push({ name: 'material.createMethod', params: id })" />
                             </div>
                         </div>
                     </div>
@@ -238,70 +217,83 @@ const handleStatusFilter = (params) => {
         margin-bottom: 30px;
     }
 
-    // biodata
     .biodata {
         width: 100%;
-        text-align: center;
 
-        // nama anak
-        .child-name {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--Secondary-900);
+        span {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 20px;
             margin-bottom: 10px;
         }
 
-        // score section
-        .total-score {
-            font-size: 23px;
-            margin: 0 auto 10px auto;
+        .score {
+            font-size: 40px;
             color: var(--Secondary-900);
-            font-weight: 300;
+        }
 
-            display: flex;
-            justify-content: space-between;   // kiri — kanan
-            align-items: center;             
-            width: 80%;                       
-            text-align: left;       
+        .value {
+            font-weight: bold;
+            color: var(--Secondary-900);
+            font-family: 'Ubuntu Sans';
+        }
 
-            // point score section
-            .score-value {
-                font-size: 28px;
-                color: var(--Secondary-900);
-                font-weight: 700;
+        .info {
+            cursor: pointer;
+        }
+
+        .level-container {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 20px;
+
+            .item {
+                padding: 25px 20px;
+                border-radius: 10px;
+                font-size: 30px;
+                font-weight: bold;
+                font-family: 'Ubuntu Sans';
+                border: 2px solid;
+                text-align: center;
+                cursor: pointer; // Tambahkan cursor pointer
+
+                &:nth-child(1) {
+                    border-color: var(--Secondary-900);
+                    color: var(--Secondary-900);
+
+                    &.active {
+                        background-color: var(--Secondary-900);
+                        color: var(--White);
+                    }
+                }
+
+                &:nth-child(2) {
+                    border-color: var(--Ternary-500);
+                    color: var(--Ternary-500);
+
+                    &.active {
+                        background-color: var(--Ternary-500);
+                        color: var(--White);
+                    }
+                }
+
+                &:nth-child(3) {
+                    border-color: var(--Primary-900);
+                    color: var(--Primary-900);
+
+                    &.active {
+                        background-color: var(--Primary-900);
+                        color: var(--White);
+                    }
+                }
             }
         }
 
-        .detail-list {
-            text-align: left;
-            margin: 0 auto 30px auto;
-            width: 80%;
-
-            .row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-
-                .label {
-                    font-size: 18px;
-                    color: var(--Neutral-600);
-                }
-
-                .value {
-                    font-weight: 600;
-                    color: var(--Secondary-900);
-                }
-
-                .code {
-                    display: flex;
-                    gap: 5px;
-                    align-items: center;
-                    cursor: pointer;
-                }
-            }
+        button {
+            margin-top: 30px;
         }
     }
-
 
     // Wrapper untuk Swiper dan Pagination Manual
     .data-wrapper {
@@ -339,6 +331,14 @@ const handleStatusFilter = (params) => {
                 border-radius: 10px;
                 padding: 30px;
 
+                .loading-state {
+                    min-height: 75vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                }
+
                 .card-header {
                     font-size: 30px;
                     margin-bottom: 20px;
@@ -353,6 +353,10 @@ const handleStatusFilter = (params) => {
             .exercises.card {
                 position: relative;
                 background-color: var(--White);
+
+                .spinner {
+                    border-top-color: var(--Secondary-900);
+                }
 
                 .card-header {
                     color: var(--Secondary-900);

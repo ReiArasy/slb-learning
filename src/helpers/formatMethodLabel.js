@@ -15,6 +15,9 @@ export function formatMethodLabel(method) {
         case 5:
             return 'Menebak Cepat'
             break;
+        case 6:
+            return 'Aritmatika'
+            break;
 
         default:
             break;
