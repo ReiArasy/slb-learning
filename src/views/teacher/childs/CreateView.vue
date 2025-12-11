@@ -28,7 +28,7 @@ const errors = ref([]);
 async function submit() {
 	errors.value = null;
 
-	await api.post(`/childs/insert`, {
+	await api.post(`/childs/`, {
 		name: name.value,
 		disability: disability.value,
 		birth_date: birthDate.value,
