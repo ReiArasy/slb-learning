@@ -76,6 +76,12 @@ const logout = () => {
                         Data Pengerjaan
                     </router-link>
                 </li>
+                <li :class="['menu', { 'active': route.name === 'user.profile' }]">
+                    <router-link :to="{ name: 'user.profile', params: { id: authStore.user.userId } }" class="menu-link">
+                        <UserIcon />
+                        Profil
+                    </router-link>
+                </li>
                 <li :class="['menu']">
                     <router-link to="#" class="menu-link" @click="showConfirmation">
                         <LogoutIcon /> Logout

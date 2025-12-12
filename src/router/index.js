@@ -71,6 +71,11 @@ const router = createRouter({
 					]
 				},
 				{
+					path: '/dashboard/profile',
+					name: 'user.profile',
+					component: () => import('../views/profile/EditView.vue'),
+				}, // oke kerjakan profile, semangat ya
+				{
 					path: '/exercise',
 					name: 'exercise',
 					children: [
