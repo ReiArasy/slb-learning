@@ -43,20 +43,19 @@ onMounted(async () => {
         .then((res) => {
             const data = res.data.data.child
 
-            username.value = data.username
-            fullName.value = data.fullName
-            email.value = data.email
-            phone.value = data.phone
-            address.value = data.address
-            dateOfBirth.value = new Date(data.dateOfBirth).toISOString().split('T')[0];
-            deafness.value = data.deafness
-            parentName.value = data.parent.fullName
-            parentPhone.value = data.parent.phone
-            parentAddress.value = data.parent.address
-            parentWork.value = data.parent.work
-
-            console.log(dateOfBirth.value)
+            username.value = data.username ?? null
+            fullName.value = data.fullName ?? null
+            email.value = data.email ?? null
+            phone.value = data.phone ?? null
+            address.value = data.address ?? null
+            dateOfBirth.value = new Date(data.dateOfBirth ?? null).toISOString().split('T')[0];
+            deafness.value = data.deafness ?? null
+            parentName.value = data?.parent?.fullName ?? null
+            parentPhone.value = data?.parent?.phone ?? null
+            parentAddress.value = data?.parent?.address ?? null
+            parentWork.value = data?.parent?.work ?? null
         }).catch((e) => {
+            console.log(e)
             triggerToast('Gagal memuat data', 'error')
         })
 })
@@ -101,8 +100,6 @@ async function submit() {
     <div class="container">
         <div class="page-header">
             <h1 class="page-title">Edit Profile</h1>
-            <button-component label="Kembali" size="small" display="border"
-                @click="router.push({ name: 'childs.detail', params: { id } })" />
         </div>
 
         <div class="page-body">
@@ -140,7 +137,8 @@ async function submit() {
 
 
                         <div class="btn-submit">
-                            <button-component :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Simpan'" size="full" @click="submit" />
+                            <button-component :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Simpan'"
+                                size="full" @click="submit" />
                         </div>
 
                     </div>
@@ -186,7 +184,8 @@ async function submit() {
                             :invalidMsg="errors?.parentWork ?? ''" />
 
                         <div class="btn-submit">
-                            <button-component :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Simpan'" size="full" @click="submit" />
+                            <button-component :isDisabled="isLoading" :label="isLoading ? 'Loading...' : 'Simpan'"
+                                size="full" @click="submit" />
                         </div>
 
                     </div>
