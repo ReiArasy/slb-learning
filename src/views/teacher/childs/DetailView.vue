@@ -125,7 +125,19 @@ const handleModal = () => {
                     </span>
                     <span class="name">
                         <p>Nama Orang Tua :</p>
-                        <p class="value">{{ data?.child.parent.fullName }}</p>
+                        <p class="value">{{ data?.child.parent.fullName ?? '-' }}</p>
+                    </span>
+                    <span class="name">
+                        <p>Nomor Telepon Orang Tua :</p>
+                        <p class="value">{{ data?.child.parent.phone ?? '-' }}</p>
+                    </span>
+                    <span class="name">
+                        <p>Alamat Orang Tua :</p>
+                        <p class="value">{{ data?.child.parent.address ?? '-' }}</p>
+                    </span>
+                    <span class="name">
+                        <p>Work Orang Tua :</p>
+                        <p class="value">{{ data?.child.parent.work ?? '-' }}</p>
                     </span>
                 </div>
                 <ButtonComponent v-if="!isWorkMode" label="Edit Data Anak" class="secondary" display="border"
