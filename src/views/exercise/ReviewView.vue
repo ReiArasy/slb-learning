@@ -128,7 +128,7 @@ const initAnswersData = () => {
                         <!-- if 2 = tampilkan text untuk ditulis ulang -->
                         <!-- if 3 = tampilkan text dan recorder untuk dibaca -->
                         <!-- if 4 = mengurutkan kata -->
-                        <h2 class="question" v-else-if="item?.method == 2 || item?.method == 3 || item?.method == 4">
+                        <h2 class="question" v-else-if="[2, 3, 4, 6].includes(item?.method)">
                             {{
                                 item?.question.value }}</h2>
                         <!-- if 5 = menebak cepat -->
