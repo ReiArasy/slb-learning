@@ -122,27 +122,13 @@ const handleModal = () => {
                         <p>Nama Anak :</p>
                         <p class="value">{{ data?.child.fullName }}</p>
                     </span>
-                    <span class="name" v-if="authStore.user.role == 1">
-                        <p>Nama Orang Tua :</p>
-                        <p class="value">{{ data?.parent.fullName }}</p>
-                    </span>
-                    <span class="name" v-else>
+                    <span class="name">
                         <p>Nama Guru Pendamping :</p>
                         <p class="value">{{ data?.teacher.fullName ?? 'Belum memiliki guru pendamping' }}</p>
                     </span>
                     <span class="name">
-                        <p>Kode Unik :</p>
-                        <p class="value">{{ data?.child.code }}</p>
-                    </span>
-                    <span class="level" v-if="data?.child?.level">
-                        <p>Level Disleksia Anak
-                            <InfoIcon @click="handleModal" class="info" />
-                        </p>
-                        <div class="level-container">
-                            <div :class="['item', { active: data?.child?.level == 1 }]">1</div>
-                            <div :class="['item', { active: data?.child?.level == 2 }]">2</div>
-                            <div :class="['item', { active: data?.child?.level == 3 }]">3</div>
-                        </div>
+                        <p>Nomor Telepon Guru Pendamping :</p>
+                        <p class="value">{{ data?.teacher.phone ?? '-' }}</p>
                     </span>
                 </div>
             </div>
