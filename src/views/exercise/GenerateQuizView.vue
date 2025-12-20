@@ -196,7 +196,7 @@ const getMethodBadge = (methodId) => {
                         </div>
 
                         <label :for="`q-${index}`" class="card-content">
-                            <img :src="`${apiUrl}/api/v1/image/exercise/${item.question.value}`" alt="Image"
+                            <img :src="`${apiUrl}/api/v1/${item.question.value}`" alt="Image"
                                 v-if="item.question.value && item.question.value.toString().endsWith('.png')">
 
                             <div :style="{ 'background-color': item.question.value }" class="object-color"
